@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Анализ коэффициентов</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+  <div class="logo">📊 КоэфАнализ</div>
+  <nav class="nav">
+    <a href="#" class="active">Линия</a>
+    <a href="#">Live</a>
+    <a href="#">Статистика</a>
+    <a href="#">Анализ</a>
+  </nav>
+  <div class="user-actions">
+    <div class="connection-status" id="connectionStatus">🟡 Подключение...</div>
+    <button class="btn btn-login">Вход</button>
+    <button class="btn btn-register">Регистрация</button>
+  </div>
+</header>
+
+<div class="main-container">
+  <main class="content">
+    <div class="section-header">
+      <h2 id="sectionTitle">🏆 Футбол. Анализ коэффициентов</h2>
+      <span class="last-update" id="lastUpdate">Обновление...</span>
+    </div>
+
+
+    <div id="matchesContainer"></div>
+
+    <!-- Калькулятор -->
+    <div class="calculator-section">
+      <h3>🧮 Калькулятор Value Bet</h3>
+      <div class="calc-inputs">
+        <div class="input-group">
+          <label>Коэффициент букмекера</label>
+          <input type="number" id="bookmakerOdd" step="0.01" placeholder="1.47">
+        </div>
+        <div class="input-group">
+          <label>Ваша вероятность (%)</label>
+          <input type="number" id="yourProbability" step="0.1" placeholder="65">
+        </div>
+        <button id="calculateBtn" class="btn btn-calculate">Рассчитать</button>
+      </div>
+      <div class="calc-results" id="calcResults" style="display: none;"></div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="coupon">
+      <h3>📋 Анализ матчей</h3>
+      <div class="coupon-empty" id="couponEmpty">
+        <div class="coupon-icon">📊</div>
+        <p>Выберите матч для анализа</p>
+        <p class="sub-text">Нажмите на коэффициент</p>
+      </div>
+      <div class="coupon-items" id="couponItems"></div>
+      <div class="coupon-actions" id="couponActions" style="display: none;">
+        <button class="btn btn-analyze">Анализировать</button>
+        <button class="btn btn-clear" id="clearCoupon">Очистить</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
