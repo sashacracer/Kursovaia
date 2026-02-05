@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль - БлищBOOM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+  <div class="logo">БлищBOOM</div>
+  <nav class="nav">
+    <a href="index.html">Линия</a>
+    <a href="live.html">Live</a>
+    <a href="Statics.html">Статистика</a>
+    <a href="Analiz.html">Анализ</a>
+  </nav>
+  <div class="user-actions">
+    <div class="connection-status" id="connectionStatus">Подключение...</div>
+    <div id="userProfile" style="display: none;">
+      <span id="usernameDisplay"></span>
+      <button class="btn btn-login" onclick="logout()">Выход</button>
+    </div>
+  </div>
+</header>
+
+<div class="main-container">
+  <main class="content">
+    <div class="profile-section">
+      <h2>Профиль пользователя</h2>
+      
+      <div class="profile-info" id="profileInfo">
+        <div class="info-row">
+          <span class="info-label">Имя пользователя:</span>
+          <span class="info-value" id="profileUsername">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value" id="profileEmail">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Роль:</span>
+          <span class="info-value" id="profileRole">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Последний вход:</span>
+          <span class="info-value" id="profileLastLogin">-</span>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn btn-calculate" onclick="openEditModal()">Редактировать профиль</button>
+      </div>
+    </div>
+
+    <div class="favorites-section" id="favoritesSection">
+      <h3>Избранные матчи</h3>
+      <div id="favoritesList">
+        <p class="empty-text">Нет избранных матчей</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="editModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 400px;">
+    <span class="close-modal" onclick="closeEditModal()">&times;</span>
+    <h3>Редактировать профиль</h3>
+    <form id="editForm" onsubmit="handleUpdate(event)">
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Имя пользователя</label>
+        <input type="text" id="editUsername" required>
+      </div>
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Email</label>
+        <input type="email" id="editEmail" required>
+      </div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Новый пароль (оставьте пустым, если не меняете)</label>
+        <input type="password" id="editPassword" placeholder="Новый пароль" minlength="6">
+      </div>
+      <button type="submit" class="btn btn-register" style="width: 100%;">Сохранить</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:5261';
+let currentUser = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (!savedUser) {
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    currentUser = JSON.parse(savedUser);
+    updateAuthUI();
+    loadProfile();
+});
+
+function updateAuthUI() {
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    if (usernameDisplay && currentUser) {
+        usernameDisplay.textContent = currentUser.username;
+    }
+}
+
+async function loadProfile() {
+    try {
+        const response = await fetch(`${API_URL}/api/users/${currentUser.id}`);
+        if (!response.ok) {
+            logout();
+            return;
+        }
+        
+        const user = await response.json();
+        
+        document.getElementById('profileUsername').textContent = user.username;
+        document.getElementById('profileEmail').textContent = user.email;
+        document.getElementById('profileRole').textContent = user.role;
+        document.getElementById('profileLastLogin').textContent = user.lastLogin 
+            ? new Date(user.lastLogin).toLocaleString() 
+            : 'Никогда';
+        
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+
+        renderFavorites(user.favorites);
+        
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+function renderFavorites(favorites) {
+    const container = document.getElementById('favoritesList');
+    
+    if (!favorites || favorites.length === 0) {
+        container.innerHTML = '<p class="empty-text">Нет избранных матчей</p>';
+        return;
+    }
+    
+    container.innerHTML = favorites.map(f => `
+        <div class="favorite-item">
+            <div class="favorite-match">
+                <span class="match-teams">${f.match.homeTeam} - ${f.match.awayTeam}</span>
+                <span class="match-time">${f.match.time}</span>
+            </div>
+            <div class="favorite-odds">
+                П1: ${f.match.odds.p1.toFixed(2)} | 
+                X: ${f.match.odds.x.toFixed(2)} | 
+                П2: ${f.match.odds.p2.toFixed(2)}
+            </div>
+            <button class="btn btn-clear" onclick="removeFavorite(${f.matchId})">Удалить</button>
+        </div>
+    `).join('');
+}
+
+async function removeFavorite(matchId) {
+    try {
+        const response = await fetch(`${API_URL}/api/users/${currentUser.id}/favorites/${matchId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadProfile(); 
+        }
+    } catch (error) {
+        console.error('Error removing favorite:', error);
+    }
+}
+
+function openEditModal() {
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+async function handleUpdate(event) {
+    event.preventDefault();
+    
+    const updateData = {
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        password: document.getElementById('editPassword').value || null
+    };
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/${currentUser.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) {
+            alert('Ошибка обновления профиля');
+            return;
+        }
+        
+        const updatedUser = await response.json();
+        currentUser = { ...currentUser, ...updatedUser };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        updateAuthUI();
+        loadProfile();
+        closeEditModal();
+        alert('Профиль обновлен!');
+        
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('Ошибка обновления. Попробуйте позже.');
+    }
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById('editModal');
+    if (event.target === editModal) {
+        closeEditModal();
+    }
+}
+</script>
+</body>
+</html>

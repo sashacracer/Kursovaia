@@ -8,33 +8,37 @@
 </head>
 <body>
 <header class="header">
-  <div class="logo">📊 КоэфАнализ</div>
+  <div class="logo">📊 БлищBOOM 📊</div>
   <nav class="nav">
-    <a href="#" class="active">Линия</a>
-    <a href="#">Live</a>
-    <a href="#">Статистика</a>
-    <a href="#">Анализ</a>
+    <a href="index.html" class="active">Линия</a>
+    <a href="live.html">Live</a>
+    <a href="Statics.html">Статистика</a>
+    <a href="Analiz.html">Анализ</a>
   </nav>
   <div class="user-actions">
-    <div class="connection-status" id="connectionStatus">🟡 Подключение...</div>
-    <button class="btn btn-login">Вход</button>
-    <button class="btn btn-register">Регистрация</button>
+  <div class="connection-status" id="connectionStatus">Подключение...</div>
+  <div id="authButtons">
+    <button class="btn btn-login" onclick="openLoginModal()">Вход</button>
+    <button class="btn btn-register" onclick="openRegisterModal()">Регистрация</button>
   </div>
+  <div id="userProfile" style="display: none;">
+    <a href="profile.html" class="profile-link" id="usernameDisplay"></a>
+    <button class="btn btn-login" onclick="logout()">Выход</button>
+  </div>
+</div>
 </header>
 
 <div class="main-container">
   <main class="content">
     <div class="section-header">
-      <h2 id="sectionTitle">🏆 Футбол. Анализ коэффициентов</h2>
+      <h2 id="sectionTitle">Футбол. Анализ коэффициентов</h2>
       <span class="last-update" id="lastUpdate">Обновление...</span>
     </div>
 
-
     <div id="matchesContainer"></div>
 
-    <!-- Калькулятор -->
     <div class="calculator-section">
-      <h3>🧮 Калькулятор Value Bet</h3>
+      <h3>Калькулятор Value Bet</h3>
       <div class="calc-inputs">
         <div class="input-group">
           <label>Коэффициент букмекера</label>
@@ -52,7 +56,7 @@
 
   <aside class="sidebar">
     <div class="coupon">
-      <h3>📋 Анализ матчей</h3>
+      <h3>Анализ матчей</h3>
       <div class="coupon-empty" id="couponEmpty">
         <div class="coupon-icon">📊</div>
         <p>Выберите матч для анализа</p>
@@ -60,11 +64,92 @@
       </div>
       <div class="coupon-items" id="couponItems"></div>
       <div class="coupon-actions" id="couponActions" style="display: none;">
-        <button class="btn btn-analyze">Анализировать</button>
+        <a href="https://ya.ru" target="_blank">
+          <button class="btn btn-analyze">Ставка</button>
+        </a>
         <button class="btn btn-clear" id="clearCoupon">Очистить</button>
       </div>
     </div>
   </aside>
+</div>
+
+<div id="loginModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 400px;">
+    <span class="close-modal" onclick="closeLoginModal()">&times;</span>
+    <h3>Вход</h3>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="input-group" style="margin-bottom: 16px;">
+        <label>Имя пользователя или email</label>
+        <input type="text" id="loginUsername" required placeholder="Введите логин">
+      </div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Пароль</label>
+        <input type="password" id="loginPassword" required placeholder="Введите пароль">
+      </div>
+      <button type="submit" class="btn btn-register" style="width: 100%;">Войти</button>
+      <p style="text-align: center; margin-top: 16px; color: var(--text-secondary);">
+        Нет аккаунта? <a href="#" onclick="closeLoginModal(); openRegisterModal();" style="color: var(--accent-yellow);">Зарегистрироваться</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<div id="registerModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 400px;">
+    <span class="close-modal" onclick="closeRegisterModal()">&times;</span>
+    <h3>Регистрация</h3>
+    <form id="registerForm" onsubmit="handleRegister(event)">
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Имя пользователя</label>
+        <input type="text" id="regUsername" required placeholder="Придумайте логин">
+      </div>
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Email</label>
+        <input type="email" id="regEmail" required placeholder="Введите email">
+      </div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Пароль</label>
+        <input type="password" id="regPassword" required placeholder="Придумайте пароль" minlength="6">
+      </div>
+      <button type="submit" class="btn btn-register" style="width: 100%;">Зарегистрироваться</button>
+      <p style="text-align: center; margin-top: 16px; color: var(--text-secondary);">
+        Уже есть аккаунт? <a href="#" onclick="closeRegisterModal(); openLoginModal();" style="color: var(--accent-yellow);">Войти</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<div id="moreModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <h3 id="modalTitle">Дополнительные ставки</h3>
+    <div class="extra-odds">
+      <div class="extra-odd-box">
+        <span class="extra-label">Тотал больше 2.5</span>
+        <span class="extra-value" id="totalOver">1.85</span>
+      </div>
+      <div class="extra-odd-box">
+        <span class="extra-label">Тотал меньше 2.5</span>
+        <span class="extra-value" id="totalUnder">1.95</span>
+      </div>
+      <div class="extra-odd-box">
+        <span class="extra-label">Обе забьют - Да</span>
+        <span class="extra-value" id="bothYes">1.75</span>
+      </div>
+      <div class="extra-odd-box">
+        <span class="extra-label">Обе забьют - Нет</span>
+        <span class="extra-value" id="bothNo">2.05</span>
+      </div>
+      <div class="extra-odd-box">
+        <span class="extra-label">Фора 1 (-1)</span>
+        <span class="extra-value" id="fora1">2.40</span>
+      </div>
+      <div class="extra-odd-box">
+        <span class="extra-label">Фора 2 (+1)</span>
+        <span class="extra-value" id="fora2">1.60</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>

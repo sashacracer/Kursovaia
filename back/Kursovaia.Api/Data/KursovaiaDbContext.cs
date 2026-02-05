@@ -13,6 +13,8 @@ public class KursovaiaDbContext : DbContext
     public DbSet<Match> Matches { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<MatchOdds> MatchOdds { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<UserFavorite> UserFavorites { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,5 +34,17 @@ public class KursovaiaDbContext : DbContext
             .HasOne(m => m.Odds)
             .WithOne()
             .HasForeignKey<MatchOdds>(o => o.MatchId);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<UserFavorite>()
+            .HasIndex(uf => new { uf.UserId, uf.MatchId })
+            .IsUnique();
     }
 }
