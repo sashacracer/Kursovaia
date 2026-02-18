@@ -410,6 +410,56 @@ window.analyzeSelected = function() {
     
     document.getElementById('analysisContent').innerHTML = analysisHTML;
     document.getElementById('analysisModal').style.display = 'flex';
+    // Расчет вероятности на основе факторов
+function calculateProbability() {
+    // Форма команд (вес 40%)
+    const homeWins = parseInt(document.getElementById('homeWins')?.value || 0);
+    const awayWins = parseInt(document.getElementById('awayWins')?.value || 0);
+    const totalGames = homeWins + awayWins || 1;
+    const formProb = (homeWins / totalGames) * 40;
+    
+    // H2H (вес 30%)
+    const h2hHome = parseInt(document.getElementById('h2hHome')?.value || 0);
+    const h2hDraw = parseInt(document.getElementById('h2hDraw')?.value || 0);
+    const h2hAway = parseInt(document.getElementById('h2hAway')?.value || 0);
+    const totalH2h = h2hHome + h2hDraw + h2hAway || 1;
+    const h2hProb = (h2hHome / totalH2h) * 30;
+    
+    // Базовая вероятность
+    let baseProb = formProb + h2hProb + 15; // 15% базовая ничья
+    
+    // Корректировки
+    if (document.getElementById('homeAdvantage')?.checked) baseProb += 5;
+    if (document.getElementById('keyInjuries')?.checked) baseProb -= 10;
+    if (document.getElementById('highMotivation')?.checked) baseProb += 5;
+    if (document.getElementById('fatigue')?.checked) baseProb -= 5;
+    
+    // Ограничиваем 10-90%
+    baseProb = Math.max(10, Math.min(90, baseProb));
+    
+    const probEl = document.getElementById('calculatedProb');
+    if (probEl) {
+        probEl.textContent = baseProb.toFixed(1) + '%';
+    }
+    
+    return baseProb;
+}
+
+// Применить расчетную вероятность в калькулятор
+function applyCalculatedProb() {
+    const prob = calculateProbability();
+    const input = document.getElementById('yourProbability');
+    if (input) {
+        input.value = prob.toFixed(1);
+        // Автоматически прокручиваем к калькулятору
+        document.querySelector('.calculator-section').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    calculateProbability();
+});
 }
 
 function closeAnalysisModal() {

@@ -104,7 +104,7 @@ app.MapPut("/api/users/{id}", async (int id, UpdateUserRequest request, UserServ
     return Results.Ok(new { request.Username, request.Email });
 });
 
-record UpdateUserRequest(string Username, string Email, string? Password);
+public record UpdateUserRequest(string Username, string Email, string? Password);
 
 record CalculateRequest(double BookmakerOdd, double YourProbability);
 record RegisterRequest(string Username, string Email, string Password);

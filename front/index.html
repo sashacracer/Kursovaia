@@ -52,6 +52,101 @@
       </div>
       <div class="calc-results" id="calcResults" style="display: none;"></div>
     </div>
+<div class="calculator-section">
+  <h3>📊 Помощь в оценке вероятности</h3>
+  
+  <div class="analysis-factors">
+    <div class="factor-group">
+      <h4>Форма команд (последние 5 матчей)</h4>
+      <div class="factor-inputs">
+        <div class="input-group">
+          <label>Побед хозяев</label>
+          <input type="number" id="homeWins" min="0" max="5" value="3" onchange="calculateProbability()">
+        </div>
+        <div class="input-group">
+          <label>Побед гостей</label>
+          <input type="number" id="awayWins" min="0" max="5" value="2" onchange="calculateProbability()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="factor-group">
+      <h4>Личные встречи (H2H)</h4>
+      <div class="factor-inputs">
+        <div class="input-group">
+          <label>Побед хозяев</label>
+          <input type="number" id="h2hHome" min="0" value="2" onchange="calculateProbability()">
+        </div>
+        <div class="input-group">
+          <label>Ничьих</label>
+          <input type="number" id="h2hDraw" min="0" value="1" onchange="calculateProbability()">
+        </div>
+        <div class="input-group">
+          <label>Побед гостей</label>
+          <input type="number" id="h2hAway" min="0" value="1" onchange="calculateProbability()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="factor-group">
+      <h4>Дополнительные факторы</h4>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="homeAdvantage" checked onchange="calculateProbability()"> Домашнее преимущество (+5%)</label>
+        <label><input type="checkbox" id="keyInjuries" onchange="calculateProbability()"> Травмы ключевых игроков (-10%)</label>
+        <label><input type="checkbox" id="highMotivation" onchange="calculateProbability()"> Высокая мотивация (+5%)</label>
+        <label><input type="checkbox" id="fatigue" onchange="calculateProbability()"> Усталость от игр (-5%)</label>
+      </div>
+    </div>
+    
+    <div class="calculated-probability">
+      <span>Расчетная вероятность победы хозяев:</span>
+      <span id="calculatedProb" class="prob-value">50%</span>
+    </div>
+    
+    <button class="btn btn-calculate" onclick="applyCalculatedProb()">Применить в калькулятор</button>
+  </div>
+</div>
+
+<div class="calculator-section">
+  <h3>🔗 Источники статистики</h3>
+  <div class="stats-links">
+    <a href="https://www.flashscore.com/" target="_blank" class="stats-link">
+      <span class="link-icon">⚽</span>
+      <div>
+        <span class="link-title">FlashScore</span>
+        <span class="link-desc">Результаты, статистика, H2H</span>
+      </div>
+    </a>
+    <a href="https://understat.com/" target="_blank" class="stats-link">
+      <span class="link-icon">📈</span>
+      <div>
+        <span class="link-title">Understat</span>
+        <span class="link-desc">xG статистика (ожидаемые голы)</span>
+      </div>
+    </a>
+    <a href="https://www.sofascore.com/" target="_blank" class="stats-link">
+      <span class="link-icon">📊</span>
+      <div>
+        <span class="link-title">SofaScore</span>
+        <span class="link-desc">Рейтинги игроков, тепловые карты</span>
+      </div>
+    </a>
+    <a href="https://www.transfermarkt.com/" target="_blank" class="stats-link">
+      <span class="link-icon">💰</span>
+      <div>
+        <span class="link-title">Transfermarkt</span>
+        <span class="link-desc">Стоимость игроков, составы</span>
+      </div>
+    </a>
+    <a href="https://fbref.com/" target="_blank" class="stats-link">
+      <span class="link-icon">📚</span>
+      <div>
+        <span class="link-title">FBref</span>
+        <span class="link-desc">Детальная статистика (Opta)</span>
+      </div>
+    </a>
+  </div>
+</div>
   </main>
 
   <aside class="sidebar">
