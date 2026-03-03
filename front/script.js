@@ -151,6 +151,8 @@ async function initializeApp() {
     setupEventListeners();
 }
 
+// проверка на подключение к API и загрузка матчей
+
 async function loadMatches() {
     try {
         updateConnectionStatus('🟡 Загрузка...');
@@ -170,6 +172,8 @@ async function loadMatches() {
     }
 }
 
+
+// загрузка матчей и рендеринг карточек матчей с коэффициентами и возможностью выбора ставок
 function renderMatches() {
     const container = document.getElementById('matchesContainer');
     if (!container) return;
@@ -326,6 +330,8 @@ function clearCoupon() {
     renderCoupon();
 }
 
+// расчет вероятности на основе факторов и отображение расширенной информации в модальном окне
+
 function openMoreModal(homeTeam, awayTeam, p1, x, p2) {
     document.getElementById('modalTitle').textContent = `${homeTeam} vs ${awayTeam}`;
     
@@ -354,6 +360,8 @@ window.onclick = function(event) {
         closeAnalysisModal();
     }
 }
+
+// сам калькулятор value и анализ выбранных ставок с выводом рекомендаций и вероятностей в модальном окне
 
 window.analyzeSelected = function() {
     if (selectedOdds.length === 0) return;

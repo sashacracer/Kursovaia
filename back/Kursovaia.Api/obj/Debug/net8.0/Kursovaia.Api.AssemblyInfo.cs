@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Kursovaia.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3ca351dee377b61b629d691513c4d40a89978b9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c78dec41f5134efa825d16341535d8d6945b898")]
 [assembly: System.Reflection.AssemblyProductAttribute("Kursovaia.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Kursovaia.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
