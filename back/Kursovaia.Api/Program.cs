@@ -1,3 +1,4 @@
+using Kursovaia.Api.Common;
 using Kursovaia.Api.Data;
 using Kursovaia.Api.Services;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy(AppCommon.CorsPolicyName, policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:5500")
+        policy.WithOrigins(AppCommon.FrontendOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -19,32 +20,33 @@ builder.Services.AddDbContext<KursovaiaDbContext>(options =>
 
 builder.Services.AddScoped<OddsService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddHttpClient<SofascoreMatchesService>();
 builder.Services.AddHostedService<OddsBackgroundService>();
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
+app.UseCors(AppCommon.CorsPolicyName);
 
 // Matches API
-app.MapGet("/api/matches", async (OddsService service) => 
+app.MapGet(AppCommon.Routes.Matches, async (OddsService service) => 
     Results.Ok(await service.GetMatchesAsync()));
 
-app.MapPost("/api/calculate", (CalculateRequest request, OddsService service) =>
+app.MapPost(AppCommon.Routes.Calculate, (CalculateRequest request, OddsService service) =>
 {
     var result = service.CalculateValue(request.BookmakerOdd, request.YourProbability);
     return Results.Ok(result);
 });
 
 // Users API
-app.MapPost("/api/auth/register", async (RegisterRequest request, UserService service) =>
+app.MapPost(AppCommon.Routes.AuthRegister, async (RegisterRequest request, UserService service) =>
 {
     var user = await service.RegisterAsync(request.Username, request.Email, request.Password);
-    if (user == null) return Results.BadRequest("Username or email already exists");
+    if (user == null) return Results.BadRequest(AppCommon.Errors.UserExists);
     
     return Results.Ok(new { user.Id, user.Username, user.Email, user.Role });
 });
 
-app.MapPost("/api/auth/login", async (LoginRequest request, UserService service) =>
+app.MapPost(AppCommon.Routes.AuthLogin, async (LoginRequest request, UserService service) =>
 {
     var user = await service.LoginAsync(request.UsernameOrEmail, request.Password);
     if (user == null) return Results.Unauthorized();
@@ -52,7 +54,7 @@ app.MapPost("/api/auth/login", async (LoginRequest request, UserService service)
     return Results.Ok(new { user.Id, user.Username, user.Email, user.Role });
 });
 
-app.MapGet("/api/users/{id}", async (int id, UserService service) =>
+app.MapGet(AppCommon.Routes.UserById, async (int id, UserService service) =>
 {
     var user = await service.GetByIdAsync(id);
     if (user == null) return Results.NotFound();
@@ -81,28 +83,28 @@ app.MapGet("/api/users/{id}", async (int id, UserService service) =>
     });
 });
 
-app.MapPost("/api/users/{userId}/favorites/{matchId}", async (int userId, int matchId, UserService service) =>
+app.MapPost(AppCommon.Routes.UserFavorites, async (int userId, int matchId, UserService service) =>
 {
     var success = await service.AddToFavoritesAsync(userId, matchId);
-    if (!success) return Results.BadRequest("Already in favorites");
+    if (!success) return Results.BadRequest(AppCommon.Errors.AlreadyInFavorites);
     return Results.Ok();
 });
 
-app.MapDelete("/api/users/{userId}/favorites/{matchId}", async (int userId, int matchId, UserService service) =>
+app.MapDelete(AppCommon.Routes.UserFavorites, async (int userId, int matchId, UserService service) =>
 {
     var success = await service.RemoveFromFavoritesAsync(userId, matchId);
-    if (!success) return Results.NotFound();
+    if (!success) return Results.NotFound(AppCommon.Errors.FavoriteNotFound);
     return Results.Ok();
 });
 
-app.Run();
-
-app.MapPut("/api/users/{id}", async (int id, UpdateUserRequest request, UserService service) =>
+app.MapPut(AppCommon.Routes.UserById, async (int id, UpdateUserRequest request, UserService service) =>
 {
     var success = await service.UpdateUserAsync(id, request);
     if (!success) return Results.NotFound();
     return Results.Ok(new { request.Username, request.Email });
 });
+
+app.Run();
 
 public record UpdateUserRequest(string Username, string Email, string? Password);
 

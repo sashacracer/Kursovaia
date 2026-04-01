@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\sasha\\OneDrive\\Документы\\Kursovaia\\back\\Kursovaia.Api\\Kursovaia.Api.csproj": {}
+    "/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/Kursovaia.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\sasha\\OneDrive\\Документы\\Kursovaia\\back\\Kursovaia.Api\\Kursovaia.Api.csproj": {
+    "/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/Kursovaia.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\sasha\\OneDrive\\Документы\\Kursovaia\\back\\Kursovaia.Api\\Kursovaia.Api.csproj",
+        "projectUniqueName": "/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/Kursovaia.Api.csproj",
         "projectName": "Kursovaia.Api",
-        "projectPath": "C:\\Users\\sasha\\OneDrive\\Документы\\Kursovaia\\back\\Kursovaia.Api\\Kursovaia.Api.csproj",
-        "packagesPath": "C:\\Users\\sasha\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\sasha\\OneDrive\\Документы\\Kursovaia\\back\\Kursovaia.Api\\obj\\",
+        "projectPath": "/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/Kursovaia.Api.csproj",
+        "packagesPath": "/Users/ezhzzz/.nuget/packages/",
+        "outputPath": "/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\sasha\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/ezhzzz/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -78,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.419/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

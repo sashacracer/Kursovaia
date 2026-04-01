@@ -1,27 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-        <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Анализ - БлищBOOM</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <body>
-    <body>
-    <header class="header">
-  <div class="logo">📊 БлищBOOM 📊</div>
-  <nav class="nav">
-    <a href="index.html">Линии</a>
-    <a href="live.html">Live</a>
-    <a href="Statics.html" >Статистика</a>
-    <a href="Analiz.html"class="active">Анализ</a>
-  </nav>
-  <div class="user-actions">
-    <div class="connection-status" id="connectionStatus">🟡 Подключение...</div>
-    <button class="btn btn-login">Вход</button>
-    <button class="btn btn-register">Регистрация</button>
+  <header class="header">
+    <div class="logo">📊 БлищBOOM 📊</div>
+    <nav class="nav">
+      <a href="index.html">Линия</a>
+      <a href="live.html">Live</a>
+      <a href="Statics.html">Статистика</a>
+      <a href="Analiz.html" class="active">Анализ</a>
+    </nav>
+    <div class="user-actions">
+      <div class="connection-status" id="connectionStatus">🟢 Онлайн</div>
+      <a href="profile.html" class="profile-link">Профиль</a>
+    </div>
+  </header>
+
+  <div class="main-container page-container">
+    <main class="content">
+      <section class="page-hero">
+        <h1>Pre-match анализ</h1>
+        <p>Структура принятия решения: от формы команд до value в линии.</p>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Чеклист перед ставкой</h3>
+        <div class="tips-list">
+          <div class="tip-item">Сверить последние 5 матчей и уровень соперников.</div>
+          <div class="tip-item">Проверить составы и статус травм за 60 минут до игры.</div>
+          <div class="tip-item">Сопоставить движение коэффициентов с новостным фоном.</div>
+          <div class="tip-item">Оценить мотивацию и турнирный контекст встречи.</div>
+        </div>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <h3>Матч дня: Реал - Атлетико</h3>
+          <p class="muted">Ожидаемый темп: средний, с упором на позиционные атаки хозяев.</p>
+          <ul class="analysis-list">
+            <li>Реал дома: 7 побед в 9 матчах.</li>
+            <li>Атлетико на выезде пропускает в 6 из 8 игр.</li>
+            <li>При раннем голе Реала растет вероятность ТБ 2.5.</li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h3>Идеи рынка</h3>
+          <p class="muted">Не прогноз, а гипотезы для проверки по линии и составам.</p>
+          <ul class="analysis-list">
+            <li>Обе забьют - Да при коэффициенте от 1.80.</li>
+            <li>Инд. тотал хозяев больше 1.5 при 1.90+.</li>
+            <li>Live-добавка на гол после 70' при низком xG.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <div class="stats-box">
+        <h4>Статус проверки</h4>
+        <div class="stat-item"><span>Составы</span><span class="stat-value">Ожидаются</span></div>
+        <div class="stat-item"><span>Погодные условия</span><span class="stat-value">Нормально</span></div>
+        <div class="stat-item"><span>Value по рынку</span><span class="stat-value success">Есть сигналы</span></div>
+      </div>
+    </aside>
   </div>
+
+  <script src="js/common.js"></script>
 </body>
-<script src="script.js"></script>
 </html>

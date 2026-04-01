@@ -1,26 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live - БлищBOOM</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-  <div class="logo">📊 БлищBOOM 📊</div>
-  <nav class="nav">
-    <a href="index.html">Линии</a>
-    <a href="live.html"class="active">Live</a>
-    <a href="Statics.html">Статистика</a>
-    <a href="Analiz.html">Анализ</a>
-  </nav>
-  <div class="user-actions">
-    <div class="connection-status" id="connectionStatus">🟡 Подключение...</div>
-    <button class="btn btn-login"href="">Вход</button>
-    <button class="btn btn-register">Регистрация</button>
+  <header class="header">
+    <div class="logo">📊 БлищBOOM 📊</div>
+    <nav class="nav">
+      <a href="index.html">Линия</a>
+      <a href="live.html" class="active">Live</a>
+      <a href="Statics.html">Статистика</a>
+      <a href="Analiz.html">Анализ</a>
+    </nav>
+    <div class="user-actions">
+      <div class="connection-status" id="connectionStatus">🟢 Онлайн</div>
+      <a href="profile.html" class="profile-link">Профиль</a>
+    </div>
+  </header>
+
+  <div class="main-container page-container">
+    <main class="content">
+      <section class="page-hero">
+        <h1>Live-центр матчей</h1>
+        <p>Следи за темпом игры и обновляй решения в режиме реального времени.</p>
+      </section>
+
+      <section class="info-grid">
+        <article class="info-card">
+          <div class="tag-live">LIVE 67'</div>
+          <h3>Арсенал - Ливерпуль</h3>
+          <p class="muted">Счет: 2:1 • Удары в створ: 6:4 • Владение: 54%</p>
+          <div class="quick-odds">
+            <span>П1 1.92</span>
+            <span>X 3.70</span>
+            <span>П2 4.10</span>
+          </div>
+        </article>
+
+        <article class="info-card">
+          <div class="tag-live">LIVE 39'</div>
+          <h3>Интер - Милан</h3>
+          <p class="muted">Счет: 0:0 • xG: 0.82 - 0.41 • Угловые: 5:2</p>
+          <div class="quick-odds">
+            <span>П1 2.25</span>
+            <span>X 2.95</span>
+            <span>П2 3.45</span>
+          </div>
+        </article>
+
+        <article class="info-card">
+          <div class="tag-live">HOT MOMENT</div>
+          <h3>Барселона - Севилья</h3>
+          <p class="muted">Красная карточка у гостей, рынок резко сдвинулся за 3 минуты.</p>
+          <div class="quick-odds">
+            <span>П1 1.58</span>
+            <span>X 4.60</span>
+            <span>П2 7.80</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Что отслеживать в лайве</h3>
+        <div class="tips-list">
+          <div class="tip-item">Темп и прессинг после 55-й минуты.</div>
+          <div class="tip-item">Изменение xG по пятиминуткам.</div>
+          <div class="tip-item">Фолы и карточки: риск поздних пенальти.</div>
+          <div class="tip-item">Сигналы от замены ключевых игроков.</div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <div class="stats-box">
+        <h4>Live-тренды дня</h4>
+        <div class="stat-item"><span>Голов после 75'</span><span class="stat-value">31%</span></div>
+        <div class="stat-item"><span>Камбэков</span><span class="stat-value">4</span></div>
+        <div class="stat-item"><span>Матчей в эфире</span><span class="stat-value success">12</span></div>
+      </div>
+    </aside>
   </div>
-</header>
+
+  <script src="js/common.js"></script>
 </body>
-<script src="script.js"></script>
 </html>

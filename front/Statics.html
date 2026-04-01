@@ -1,26 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-        <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика - БлищBOOM</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <body>
-    <header class="header">
-  <div class="logo">📊 БлищBOOM 📊</div>
-  <nav class="nav">
-    <a href="index.html">Линии</a>
-    <a href="live.html">Live</a>
-    <a href="Statics.html" class="active">Статистика</a>
-    <a href="Analiz.html">Анализ</a>
-  </nav>
-  <div class="user-actions">
-    <div class="connection-status" id="connectionStatus">🟡 Подключение...</div>
-    <button class="btn btn-login">Вход</button>
-    <button class="btn btn-register">Регистрация</button>
+  <header class="header">
+    <div class="logo">📊 БлищBOOM 📊</div>
+    <nav class="nav">
+      <a href="index.html">Линия</a>
+      <a href="live.html">Live</a>
+      <a href="Statics.html" class="active">Статистика</a>
+      <a href="Analiz.html">Анализ</a>
+    </nav>
+    <div class="user-actions">
+      <div class="connection-status" id="connectionStatus">🟢 Онлайн</div>
+      <a href="profile.html" class="profile-link">Профиль</a>
+    </div>
+  </header>
+
+  <div class="main-container page-container">
+    <main class="content">
+      <section class="page-hero">
+        <h1>Статистика лиг и трендов</h1>
+        <p>Быстрый срез по результативности, тоталам и надежности фаворитов.</p>
+      </section>
+
+      <section class="kpi-grid">
+        <article class="kpi-card">
+          <span class="kpi-label">Средний тотал</span>
+          <strong class="kpi-value">2.84</strong>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Обе забьют</span>
+          <strong class="kpi-value">58%</strong>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Победы фаворитов</span>
+          <strong class="kpi-value">63%</strong>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Голы после 80'</span>
+          <strong class="kpi-value">24%</strong>
+        </article>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Топ-лиги по результативности</h3>
+        <div class="stats-table">
+          <div class="table-row table-head">
+            <span>Лига</span><span>Голов/матч</span><span>ОЗ Да</span><span>ТБ 2.5</span>
+          </div>
+          <div class="table-row">
+            <span>АПЛ</span><span>3.01</span><span>61%</span><span>57%</span>
+          </div>
+          <div class="table-row">
+            <span>Серия A</span><span>2.76</span><span>56%</span><span>52%</span>
+          </div>
+          <div class="table-row">
+            <span>Ла Лига</span><span>2.58</span><span>50%</span><span>47%</span>
+          </div>
+          <div class="table-row">
+            <span>Бундеслига</span><span>3.22</span><span>64%</span><span>62%</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <div class="stats-box">
+        <h4>Индикаторы риска</h4>
+        <div class="stat-item"><span>Серии без побед</span><span class="stat-value">7 команд</span></div>
+        <div class="stat-item"><span>Плотность календаря</span><span class="stat-value">Высокая</span></div>
+        <div class="stat-item"><span>Ротация составов</span><span class="stat-value success">Активна</span></div>
+      </div>
+    </aside>
   </div>
+
+  <script src="js/common.js"></script>
 </body>
-<script src="script.js"></script>
 </html>

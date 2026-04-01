@@ -7,11 +7,18 @@ namespace Kursovaia.Api.Services;
 public class OddsService
 {
     private readonly IServiceProvider _services;
+    private readonly SofascoreMatchesService _sofascoreMatchesService;
+    private readonly ILogger<OddsService> _logger;
     private readonly Random _random = new();
 
-    public OddsService(IServiceProvider services)
+    public OddsService(
+        IServiceProvider services,
+        SofascoreMatchesService sofascoreMatchesService,
+        ILogger<OddsService> logger)
     {
         _services = services;
+        _sofascoreMatchesService = sofascoreMatchesService;
+        _logger = logger;
         InitializeDataAsync().Wait();
     }
 
@@ -73,6 +80,14 @@ public class OddsService
 
     public async Task<List<Match>> GetMatchesAsync()
     {
+        var realMatches = await _sofascoreMatchesService.GetMatchesAsync();
+        if (realMatches.Count > 0)
+        {
+            return realMatches;
+        }
+
+        _logger.LogWarning("SofaScore returned no matches. Falling back to local database matches.");
+
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
         
