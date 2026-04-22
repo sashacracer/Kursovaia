@@ -15,9 +15,11 @@ public static class AppCommon
     {
         public const string Matches = "/api/matches";
         public const string Calculate = "/api/calculate";
+        public const string UnderstatXg = "/api/analysis/understat-xg";
         public const string AuthRegister = "/api/auth/register";
         public const string AuthLogin = "/api/auth/login";
         public const string UserById = "/api/users/{id}";
+        public const string UserMatches = "/api/users/{userId}/matches";
         public const string UserFavorites = "/api/users/{userId}/favorites/{matchId}";
     }
 

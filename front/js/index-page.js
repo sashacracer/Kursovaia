@@ -1,5 +1,7 @@
 (function () {
   const UPDATE_INTERVAL = 5000;
+  const SELECTED_ODDS_STORAGE_KEY = "selectedOddsForStats";
+  const ANALYSIS_SELECTION_STORAGE_KEY = "selectedMatchesForAnalysis";
 
   let matches = [];
   let selectedOdds = [];
@@ -7,6 +9,23 @@
 
   function byId(id) {
     return document.getElementById(id);
+  }
+
+  function loadSelectedOddsFromStorage() {
+    const raw = localStorage.getItem(SELECTED_ODDS_STORAGE_KEY);
+    if (!raw) return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error("Failed to parse selected odds from storage", error);
+      return [];
+    }
+  }
+
+  function saveSelectedOddsToStorage() {
+    localStorage.setItem(SELECTED_ODDS_STORAGE_KEY, JSON.stringify(selectedOdds));
   }
 
   function setStatus(text) {
@@ -18,6 +37,79 @@
   function updateLastUpdateTime() {
     const el = byId("lastUpdate");
     if (el) el.textContent = `Обновлено: ${new Date().toLocaleTimeString()}`;
+  }
+
+  function openAddMatchModal() {
+    const currentUser = window.AuthState?.getCurrentUser?.();
+    if (!currentUser) {
+      alert("Сначала войдите в аккаунт");
+      if (typeof window.openLoginModal === "function") {
+        window.openLoginModal();
+      }
+      return;
+    }
+
+    const modal = byId("addMatchModal");
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closeAddMatchModal() {
+    const modal = byId("addMatchModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  async function handleAddMatchSubmit(event) {
+    event.preventDefault();
+
+    const currentUser = window.AuthState?.getCurrentUser?.();
+    if (!currentUser) {
+      alert("Сначала войдите в аккаунт");
+      return;
+    }
+
+    const league = byId("addLeague")?.value?.trim();
+    const time = byId("addTime")?.value?.trim();
+    const homeTeam = byId("addHomeTeam")?.value?.trim();
+    const awayTeam = byId("addAwayTeam")?.value?.trim();
+    const p1 = parseFloat(byId("addP1")?.value || "0");
+    const x = parseFloat(byId("addX")?.value || "0");
+    const p2 = parseFloat(byId("addP2")?.value || "0");
+
+    if (!league || !time || !homeTeam || !awayTeam) {
+      alert("Заполните все поля матча");
+      return;
+    }
+
+    if (!p1 || !x || !p2 || p1 <= 0 || x <= 0 || p2 <= 0) {
+      alert("Введите корректные коэффициенты");
+      return;
+    }
+
+    const apiUrl = window.AppConfig?.API_URL;
+    if (!apiUrl) return;
+
+    try {
+      const response = await fetch(`${apiUrl}/api/users/${currentUser.id}/matches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ league, time, homeTeam, awayTeam, p1, x, p2 })
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || "Could not create user match");
+      }
+
+      const form = byId("addMatchForm");
+      if (form) form.reset();
+
+      closeAddMatchModal();
+      await loadMatches();
+      alert("Матч добавлен");
+    } catch (error) {
+      console.error("Error creating user match", error);
+      alert("Не удалось добавить матч");
+    }
   }
 
   async function loadMatches() {
@@ -72,10 +164,6 @@
             <div class="odd-label">П2</div>
             <div class="odd-value">${match.odds.p2.toFixed(2)}</div>
           </div>
-          <button class="odd-box more" type="button" data-more="1" data-home="${match.homeTeam.name}" data-away="${match.awayTeam.name}" data-p1="${match.odds.p1}" data-x="${match.odds.x}" data-p2="${match.odds.p2}">
-            <div class="odd-label">Ещё</div>
-            <div class="odd-value">+6</div>
-          </button>
         </div>
       </div>
     `;
@@ -127,8 +215,11 @@
 
     const existingIndex = selectedOdds.findIndex((o) => o.matchId === Number(matchId) && o.type === type);
 
+    console.log(`toggleOdd called: matchId=${matchId}, type=${type}, existingIndex=${existingIndex}, currentLength=${selectedOdds.length}`);
+
     if (existingIndex > -1) {
       selectedOdds.splice(existingIndex, 1);
+      console.log(`Removed odd. New selectedOdds:`, selectedOdds);
     } else {
       selectedOdds.push({
         matchId: Number(matchId),
@@ -136,18 +227,181 @@
         value: Number(value),
         homeTeam: match.homeTeam.name,
         awayTeam: match.awayTeam.name,
-        time: match.time
+        time: match.time,
+        league: match.league,
+        score: match.score || "",
+        isLive: Boolean(match.isLive),
+        odds: {
+          p1: Number(match.odds.p1),
+          x: Number(match.odds.x),
+          p2: Number(match.odds.p2)
+        }
       });
+      console.log(`Added odd. New selectedOdds:`, selectedOdds);
     }
 
+    saveSelectedOddsToStorage();
     renderMatches();
     renderCoupon();
   }
 
   function clearCoupon() {
     selectedOdds = [];
+    saveSelectedOddsToStorage();
     renderMatches();
     renderCoupon();
+  }
+
+  function goToAnalysis() {
+    if (selectedOdds.length === 0) {
+      alert("Сначала выбери хотя бы один исход");
+      return;
+    }
+
+    localStorage.setItem(ANALYSIS_SELECTION_STORAGE_KEY, JSON.stringify(selectedOdds));
+    window.location.href = "Analiz.html";
+  }
+
+  async function addSelectedMatchesToFavorites() {
+    if (selectedOdds.length === 0) {
+      alert("Сначала выбери хотя бы один исход");
+      return;
+    }
+
+    const currentUser = window.AuthState?.getCurrentUser?.();
+    if (!currentUser) {
+      alert("Сначала войдите в аккаунт");
+      if (typeof window.openLoginModal === "function") {
+        window.openLoginModal();
+      }
+      return;
+    }
+
+    const apiUrl = window.AppConfig?.API_URL;
+    if (!apiUrl) return;
+
+    try {
+      const userCheck = await fetch(`${apiUrl}/api/users/${currentUser.id}`);
+      if (!userCheck.ok) {
+        alert("Сессия устарела. Войдите в аккаунт заново.");
+        window.AuthState?.setCurrentUser?.(null);
+        if (typeof window.openLoginModal === "function") {
+          window.openLoginModal();
+        }
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking user session", error);
+      alert("Не удалось проверить сессию пользователя");
+      return;
+    }
+
+    const uniqueSelections = Object.values(
+      selectedOdds.reduce((acc, odd) => {
+        if (!acc[odd.matchId]) {
+          acc[odd.matchId] = odd;
+        }
+        return acc;
+      }, {})
+    );
+
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    for (const selectedOdd of uniqueSelections) {
+      let targetMatchId = selectedOdd.matchId;
+
+      try {
+        let response = await fetch(`${apiUrl}/api/users/${currentUser.id}/favorites/${targetMatchId}`, {
+          method: "POST"
+        });
+
+        if (response.ok) {
+          addedCount += 1;
+          continue;
+        }
+
+        if (response.status === 400) {
+          const badRequestText = await response.text();
+          if (badRequestText.includes("Already in favorites")) {
+            skippedCount += 1;
+            continue;
+          }
+        }
+
+        if (response.status === 404) {
+          const notFoundText = await response.text();
+          if (notFoundText.includes("User not found")) {
+            alert("Пользователь не найден. Войдите заново.");
+            window.AuthState?.setCurrentUser?.(null);
+            if (typeof window.openLoginModal === "function") {
+              window.openLoginModal();
+            }
+            return;
+          }
+        }
+
+        // If match is not present in local DB, create a local copy and retry adding to favorites.
+        const createResponse = await fetch(`${apiUrl}/api/users/${currentUser.id}/matches`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            league: selectedOdd.league || "Football",
+            time: selectedOdd.time || "TBD",
+            homeTeam: selectedOdd.homeTeam,
+            awayTeam: selectedOdd.awayTeam,
+            p1: selectedOdd.odds?.p1 || selectedOdd.value,
+            x: selectedOdd.odds?.x || selectedOdd.value,
+            p2: selectedOdd.odds?.p2 || selectedOdd.value
+          })
+        });
+
+        if (!createResponse.ok) {
+          const createErrorText = await createResponse.text();
+          throw new Error(createErrorText || "Failed to create local match copy");
+        }
+
+        const createdMatch = await createResponse.json();
+        targetMatchId = Number(createdMatch.id);
+
+        if (!targetMatchId || Number.isNaN(targetMatchId)) {
+          throw new Error("Invalid created match id");
+        }
+
+        response = await fetch(`${apiUrl}/api/users/${currentUser.id}/favorites/${targetMatchId}`, {
+          method: "POST"
+        });
+
+        if (response.ok) {
+          addedCount += 1;
+          continue;
+        }
+
+        const retryErrorText = await response.text();
+        if (response.status === 400 && retryErrorText.includes("Already in favorites")) {
+          skippedCount += 1;
+          continue;
+        }
+
+        throw new Error(retryErrorText || `Failed to add created match ${targetMatchId} to favorites`);
+      } catch (error) {
+        console.error("Error adding match to favorites", error);
+        alert("Не удалось добавить матч(и) в избранное");
+        return;
+      }
+    }
+
+    if (addedCount > 0 && skippedCount > 0) {
+      alert(`Добавлено в избранное: ${addedCount}. Уже были в избранном: ${skippedCount}.`);
+      return;
+    }
+
+    if (addedCount > 0) {
+      alert(`Добавлено в избранное: ${addedCount}`);
+      return;
+    }
+
+    alert("Все выбранные матчи уже в избранном");
   }
 
   function openMoreModal(homeTeam, awayTeam, p1, x, p2) {
@@ -272,6 +526,7 @@
       const index = Number(removeButton.dataset.removeIndex);
       if (!Number.isNaN(index)) {
         selectedOdds.splice(index, 1);
+        saveSelectedOddsToStorage();
         renderMatches();
         renderCoupon();
       }
@@ -311,13 +566,33 @@
 
     const clearBtn = byId("clearCoupon");
     if (clearBtn) clearBtn.addEventListener("click", clearCoupon);
+
+    const goToAnalysisBtn = byId("goToAnalysisBtn");
+    if (goToAnalysisBtn) goToAnalysisBtn.addEventListener("click", goToAnalysis);
+
+    const addToFavoritesBtn = byId("addToFavoritesBtn");
+    if (addToFavoritesBtn) {
+      addToFavoritesBtn.addEventListener("click", addSelectedMatchesToFavorites);
+    }
+
+    const openAddMatchModalBtn = byId("openAddMatchModalBtn");
+    if (openAddMatchModalBtn) {
+      openAddMatchModalBtn.addEventListener("click", openAddMatchModal);
+    }
+
+    const addMatchForm = byId("addMatchForm");
+    if (addMatchForm) {
+      addMatchForm.addEventListener("submit", handleAddMatchSubmit);
+    }
   }
 
   async function init() {
     if (!byId("matchesContainer")) return;
 
+    selectedOdds = loadSelectedOddsFromStorage();
     setupEvents();
     calculateProbability();
+    renderCoupon();
     await loadMatches();
 
     updateTimer = setInterval(loadMatches, UPDATE_INTERVAL);
@@ -330,6 +605,7 @@
   window.calculateProbability = calculateProbability;
   window.applyCalculatedProb = applyCalculatedProb;
   window.closeModal = closeModal;
+  window.closeAddMatchModal = closeAddMatchModal;
 
   document.addEventListener("DOMContentLoaded", init);
 })();

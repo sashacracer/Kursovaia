@@ -6,6 +6,14 @@ using System.Text;
 
 namespace Kursovaia.Api.Services;
 
+public enum AddFavoriteResult
+{
+    Added,
+    AlreadyExists,
+    UserNotFound,
+    MatchNotFound
+}
+
 public class UserService
 {
     private readonly IServiceProvider _services;
@@ -88,15 +96,30 @@ public class UserService
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public async Task<bool> AddToFavoritesAsync(int userId, int matchId)
+    public async Task<AddFavoriteResult> AddToFavoritesAsync(int userId, int matchId)
     {
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
 
+        var userExists = await context.Users.AnyAsync(u => u.Id == userId);
+        if (!userExists)
+        {
+            return AddFavoriteResult.UserNotFound;
+        }
+
+        var matchExists = await context.Matches.AnyAsync(m => m.Id == matchId);
+        if (!matchExists)
+        {
+            return AddFavoriteResult.MatchNotFound;
+        }
+
         var existing = await context.UserFavorites
             .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.MatchId == matchId);
 
-        if (existing != null) return false;
+        if (existing != null)
+        {
+            return AddFavoriteResult.AlreadyExists;
+        }
 
         var favorite = new UserFavorite
         {
@@ -106,7 +129,7 @@ public class UserService
 
         context.UserFavorites.Add(favorite);
         await context.SaveChangesAsync();
-        return true;
+        return AddFavoriteResult.Added;
     }
 
     public async Task<bool> RemoveFromFavoritesAsync(int userId, int matchId)

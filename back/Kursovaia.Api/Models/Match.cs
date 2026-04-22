@@ -13,6 +13,7 @@ public class Match
     public Team AwayTeam { get; set; } = null!;
     
     public MatchOdds Odds { get; set; } = null!;
+    public bool IsUserCreated { get; set; }
     public bool IsLive { get; set; }
     public string? Score { get; set; }
 }

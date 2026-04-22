@@ -31,92 +31,18 @@
 <div class="main-container">
   <main class="content">
     <div class="section-header">
-      <h2 id="sectionTitle">Футбол. Анализ коэффициентов</h2>
+      <div class="section-header-top">
+        <h2 id="sectionTitle">Футбол. Анализ коэффициентов</h2>
+        <button class="btn btn-register" id="openAddMatchModalBtn" type="button">Добавить свой матч</button>
+      </div>
       <span class="last-update" id="lastUpdate">Обновление...</span>
     </div>
 
     <div id="matchesContainer"></div>
 
-    <div class="calculator-section">
-      <h3>Калькулятор Value Bet</h3>
-      <div class="calc-inputs">
-        <div class="input-group">
-          <label>Коэффициент букмекера</label>
-          <input type="number" id="bookmakerOdd" step="0.01" placeholder="1.47">
-        </div>
-        <div class="input-group">
-          <label>Ваша вероятность (%)</label>
-          <input type="number" id="yourProbability" step="0.1" placeholder="65">
-        </div>
-        <button id="calculateBtn" class="btn btn-calculate">Рассчитать</button>
-      </div>
-      <div class="calc-results" id="calcResults" style="display: none;"></div>
-    </div>
-<div class="calculator-section">
-  <h3>📊 Помощь в оценке вероятности</h3>
-  
-  <div class="analysis-factors">
-    <div class="factor-group">
-      <h4>Форма команд (последние 5 матчей)</h4>
-      <div class="factor-inputs">
-        <div class="input-group">
-          <label>Побед хозяев</label>
-          <input type="number" id="homeWins" min="0" max="5" value="3" onchange="calculateProbability()">
-        </div>
-        <div class="input-group">
-          <label>Побед гостей</label>
-          <input type="number" id="awayWins" min="0" max="5" value="2" onchange="calculateProbability()">
-        </div>
-      </div>
-    </div>
-    
-    <div class="factor-group">
-      <h4>Личные встречи (H2H)</h4>
-      <div class="factor-inputs">
-        <div class="input-group">
-          <label>Побед хозяев</label>
-          <input type="number" id="h2hHome" min="0" value="2" onchange="calculateProbability()">
-        </div>
-        <div class="input-group">
-          <label>Ничьих</label>
-          <input type="number" id="h2hDraw" min="0" value="1" onchange="calculateProbability()">
-        </div>
-        <div class="input-group">
-          <label>Побед гостей</label>
-          <input type="number" id="h2hAway" min="0" value="1" onchange="calculateProbability()">
-        </div>
-      </div>
-    </div>
-    
-    <div class="factor-group">
-      <h4>Дополнительные факторы</h4>
-      <div class="checkbox-group">
-        <label><input type="checkbox" id="homeAdvantage" checked onchange="calculateProbability()"> Домашнее преимущество (+5%)</label>
-        <label><input type="checkbox" id="keyInjuries" onchange="calculateProbability()"> Травмы ключевых игроков (-10%)</label>
-        <label><input type="checkbox" id="highMotivation" onchange="calculateProbability()"> Высокая мотивация (+5%)</label>
-        <label><input type="checkbox" id="fatigue" onchange="calculateProbability()"> Усталость от игр (-5%)</label>
-      </div>
-    </div>
-    
-    <div class="calculated-probability">
-      <span>Расчетная вероятность победы хозяев:</span>
-      <span id="calculatedProb" class="prob-value">50%</span>
-    </div>
-    
-    <button class="btn btn-calculate" onclick="applyCalculatedProb()">Применить в калькулятор</button>
-  </div>
-</div>
-
 <div class="calculator-section">
   <h3>🔗 Источники статистики</h3>
   <div class="stats-links">
-    <a href="https://www.flashscore.com/" target="_blank" class="stats-link">
-      <span class="link-icon">⚽</span>
-      <div>
-        <span class="link-title">FlashScore</span>
-        <span class="link-desc">Результаты, статистика, H2H</span>
-      </div>
-    </a>
     <a href="https://understat.com/" target="_blank" class="stats-link">
       <span class="link-icon">📈</span>
       <div>
@@ -150,7 +76,7 @@
   </main>
 
   <aside class="sidebar">
-    <div class="coupon">
+    <div class="coupon" id="indexAnalysisCoupon">
       <h3>Анализ матчей</h3>
       <div class="coupon-empty" id="couponEmpty">
         <div class="coupon-icon">📊</div>
@@ -159,13 +85,61 @@
       </div>
       <div class="coupon-items" id="couponItems"></div>
       <div class="coupon-actions" id="couponActions" style="display: none;">
-        <a href="https://ya.ru" target="_blank">
-          <button class="btn btn-analyze">Ставка</button>
-        </a>
+        <div class="coupon-primary-actions">
+          <button class="btn btn-analyze" id="goToAnalysisBtn">В анализ</button>
+          <button class="btn btn-analyze" id="addToFavoritesBtn" type="button">В избранное</button>
+        </div>
         <button class="btn btn-clear" id="clearCoupon">Очистить</button>
       </div>
     </div>
   </aside>
+</div>
+
+<div id="addMatchModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 560px;">
+    <span class="close-modal" onclick="closeAddMatchModal()">&times;</span>
+    <h3>Добавить свой матч</h3>
+    <form id="addMatchForm">
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Лига</label>
+        <input type="text" id="addLeague" required placeholder="Например: Football. Premier League">
+      </div>
+
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Время матча</label>
+        <input type="text" id="addTime" required placeholder="Например: Сегодня 21:00">
+      </div>
+
+      <div class="add-match-grid">
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Хозяева</label>
+          <input type="text" id="addHomeTeam" required placeholder="Название команды">
+        </div>
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Гости</label>
+          <input type="text" id="addAwayTeam" required placeholder="Название команды">
+        </div>
+      </div>
+
+      <div class="add-match-grid">
+        <div class="input-group" style="margin-bottom: 16px;">
+          <label>Коэффициент П1</label>
+          <input type="number" id="addP1" required min="1.01" step="0.01" placeholder="1.85">
+        </div>
+        <div class="input-group" style="margin-bottom: 16px;">
+          <label>Коэффициент X</label>
+          <input type="number" id="addX" required min="1.01" step="0.01" placeholder="3.40">
+        </div>
+      </div>
+
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Коэффициент П2</label>
+        <input type="number" id="addP2" required min="1.01" step="0.01" placeholder="4.20">
+      </div>
+
+      <button type="submit" class="btn btn-register" style="width: 100%;">Сохранить матч</button>
+    </form>
+  </div>
 </div>
 
 <div id="loginModal" class="modal" style="display: none;">

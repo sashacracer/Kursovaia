@@ -39,6 +39,9 @@ namespace Kursovaia.Api.Migrations
                     b.Property<bool>("IsLive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsUserCreated")
+                        .HasColumnType("bit");
+
                     b.Property<string>("League")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

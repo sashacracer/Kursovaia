@@ -21,6 +21,7 @@ builder.Services.AddDbContext<KursovaiaDbContext>(options =>
 builder.Services.AddScoped<OddsService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddHttpClient<SofascoreMatchesService>();
+builder.Services.AddHttpClient<UnderstatXgService>();
 builder.Services.AddHostedService<OddsBackgroundService>();
 
 var app = builder.Build();
@@ -36,6 +37,68 @@ app.MapPost(AppCommon.Routes.Calculate, (CalculateRequest request, OddsService s
     var result = service.CalculateValue(request.BookmakerOdd, request.YourProbability);
     return Results.Ok(result);
 });
+
+app.MapPost(AppCommon.Routes.UserMatches, async (int userId, CreateUserMatchRequest request, OddsService service) =>
+{
+    if (string.IsNullOrWhiteSpace(request.League)
+        || string.IsNullOrWhiteSpace(request.Time)
+        || string.IsNullOrWhiteSpace(request.HomeTeam)
+        || string.IsNullOrWhiteSpace(request.AwayTeam))
+    {
+        return Results.BadRequest("League, time, homeTeam and awayTeam are required");
+    }
+
+    if (request.P1 <= 0 || request.X <= 0 || request.P2 <= 0)
+    {
+        return Results.BadRequest("Odds must be greater than 0");
+    }
+
+    var (match, error) = await service.AddUserMatchAsync(
+        userId,
+        request.League.Trim(),
+        request.Time.Trim(),
+        request.HomeTeam.Trim(),
+        request.AwayTeam.Trim(),
+        request.P1,
+        request.X,
+        request.P2);
+
+    if (match == null)
+    {
+        return Results.BadRequest(error ?? "Could not create match");
+    }
+
+    return Results.Ok(new
+    {
+        match.Id,
+        match.League,
+        match.Time,
+        HomeTeam = match.HomeTeam.Name,
+        AwayTeam = match.AwayTeam.Name,
+        Odds = new { match.Odds.P1, match.Odds.X, match.Odds.P2 }
+    });
+});
+
+app.MapGet(
+    AppCommon.Routes.UnderstatXg,
+    async (
+        string homeTeam,
+        string awayTeam,
+        double? p1,
+        double? x,
+        double? p2,
+        UnderstatXgService service,
+        CancellationToken cancellationToken) =>
+    {
+        if (string.IsNullOrWhiteSpace(homeTeam) || string.IsNullOrWhiteSpace(awayTeam))
+        {
+            return Results.BadRequest("homeTeam and awayTeam are required");
+        }
+
+        var xg = await service.GetExpectedGoalsAsync(homeTeam, awayTeam, p1, x, p2, cancellationToken);
+        return Results.Ok(xg);
+    }
+);
 
 // Users API
 app.MapPost(AppCommon.Routes.AuthRegister, async (RegisterRequest request, UserService service) =>
@@ -85,9 +148,16 @@ app.MapGet(AppCommon.Routes.UserById, async (int id, UserService service) =>
 
 app.MapPost(AppCommon.Routes.UserFavorites, async (int userId, int matchId, UserService service) =>
 {
-    var success = await service.AddToFavoritesAsync(userId, matchId);
-    if (!success) return Results.BadRequest(AppCommon.Errors.AlreadyInFavorites);
-    return Results.Ok();
+    var result = await service.AddToFavoritesAsync(userId, matchId);
+
+    return result switch
+    {
+        AddFavoriteResult.Added => Results.Ok(),
+        AddFavoriteResult.AlreadyExists => Results.BadRequest(AppCommon.Errors.AlreadyInFavorites),
+        AddFavoriteResult.UserNotFound => Results.NotFound("User not found"),
+        AddFavoriteResult.MatchNotFound => Results.NotFound("Match not found"),
+        _ => Results.BadRequest("Could not add to favorites")
+    };
 });
 
 app.MapDelete(AppCommon.Routes.UserFavorites, async (int userId, int matchId, UserService service) =>
@@ -107,6 +177,7 @@ app.MapPut(AppCommon.Routes.UserById, async (int id, UpdateUserRequest request, 
 app.Run();
 
 public record UpdateUserRequest(string Username, string Email, string? Password);
+public record CreateUserMatchRequest(string League, string Time, string HomeTeam, string AwayTeam, double P1, double X, double P2);
 
 record CalculateRequest(double BookmakerOdd, double YourProbability);
 record RegisterRequest(string Username, string Email, string Password);

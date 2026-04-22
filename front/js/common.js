@@ -1,5 +1,5 @@
 (function () {
-  const API_URL = "http://localhost:5261";
+  const API_URL = "http://localhost:5262";
   const CURRENT_USER_KEY = "currentUser";
 
   let currentUser = null;
@@ -158,6 +158,9 @@
   function closeModalOnBackdropClick(event) {
     if (event.target?.id === "loginModal") closeLoginModal();
     if (event.target?.id === "registerModal") closeRegisterModal();
+    if (event.target?.id === "addMatchModal" && typeof window.closeAddMatchModal === "function") {
+      window.closeAddMatchModal();
+    }
     if (event.target?.id === "moreModal" && typeof window.closeModal === "function") {
       window.closeModal();
     }

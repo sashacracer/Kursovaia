@@ -19,15 +19,30 @@ public class OddsService
         _services = services;
         _sofascoreMatchesService = sofascoreMatchesService;
         _logger = logger;
-        InitializeDataAsync().Wait();
+        _ = InitializeDataAsync().ContinueWith(t =>
+        {
+            if (t.IsFaulted)
+            {
+                _logger.LogWarning(t.Exception, "Failed to initialize local database. API will use SofaScore only.");
+            }
+        });
     }
 
-    private async Task InitializeDataAsync()
+    public async Task InitializeDataAsync()
     {
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
-        
-        await context.Database.MigrateAsync();
+
+        try
+        {
+            await context.Database.MigrateAsync();
+            await EnsureIsUserCreatedColumnAsync(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not migrate database. Continuing without local database.");
+            return;
+        }
 
         if (!await context.Teams.AnyAsync())
         {
@@ -80,22 +95,149 @@ public class OddsService
 
     public async Task<List<Match>> GetMatchesAsync()
     {
+        var userCreatedMatches = await GetUserCreatedMatchesAsync();
+
         var realMatches = await _sofascoreMatchesService.GetMatchesAsync();
         if (realMatches.Count > 0)
         {
+            realMatches.AddRange(userCreatedMatches);
             return realMatches;
         }
 
-        _logger.LogWarning("SofaScore returned no matches. Falling back to local database matches.");
+        _logger.LogWarning("SofaScore returned no matches. Attempting to fall back to local database matches.");
 
+        try
+        {
+            using var scope = _services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
+            
+            return await context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.Odds)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not fetch matches from database either. Returning empty list.");
+            return new List<Match>();
+        }
+    }
+
+    public async Task<(Match? Match, string? Error)> AddUserMatchAsync(
+        int userId,
+        string league,
+        string time,
+        string homeTeamName,
+        string awayTeamName,
+        double p1,
+        double x,
+        double p2)
+    {
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
-        
-        return await context.Matches
+
+        await EnsureIsUserCreatedColumnAsync(context);
+
+        var userExists = await context.Users.AnyAsync(u => u.Id == userId);
+        if (!userExists)
+        {
+            return (null, "User not found");
+        }
+
+        var homeTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == homeTeamName);
+        if (homeTeam == null)
+        {
+            homeTeam = new Team
+            {
+                Name = homeTeamName,
+                Logo = "⚽",
+                Form = "-"
+            };
+            context.Teams.Add(homeTeam);
+        }
+
+        var awayTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == awayTeamName);
+        if (awayTeam == null)
+        {
+            awayTeam = new Team
+            {
+                Name = awayTeamName,
+                Logo = "⚽",
+                Form = "-"
+            };
+            context.Teams.Add(awayTeam);
+        }
+
+        var existingMatch = await context.Matches
             .Include(m => m.HomeTeam)
             .Include(m => m.AwayTeam)
             .Include(m => m.Odds)
-            .ToListAsync();
+            .FirstOrDefaultAsync(m =>
+                m.IsUserCreated
+                && m.League == league
+                && m.Time == time
+                && m.HomeTeam.Name == homeTeamName
+                && m.AwayTeam.Name == awayTeamName);
+
+        if (existingMatch != null)
+        {
+            return (existingMatch, null);
+        }
+
+        var match = new Match
+        {
+            League = league,
+            Time = time,
+            HomeTeam = homeTeam,
+            AwayTeam = awayTeam,
+            IsLive = false,
+            IsUserCreated = true,
+            Odds = new MatchOdds
+            {
+                P1 = p1,
+                X = x,
+                P2 = p2,
+                LastUpdated = DateTime.Now
+            }
+        };
+
+        context.Matches.Add(match);
+        await context.SaveChangesAsync();
+
+        return (match, null);
+    }
+
+    private async Task<List<Match>> GetUserCreatedMatchesAsync()
+    {
+        try
+        {
+            using var scope = _services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
+
+            await EnsureIsUserCreatedColumnAsync(context);
+
+            return await context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.Odds)
+                .Where(m => m.IsUserCreated)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not fetch user-created matches from database.");
+            return new List<Match>();
+        }
+    }
+
+    private static Task EnsureIsUserCreatedColumnAsync(KursovaiaDbContext context)
+    {
+        return context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('Matches', 'IsUserCreated') IS NULL
+BEGIN
+    ALTER TABLE [Matches] ADD [IsUserCreated] bit NOT NULL CONSTRAINT [DF_Matches_IsUserCreated] DEFAULT(0);
+END");
     }
 
     public async Task UpdateOddsAsync(int matchId, Dictionary<string, double> newOdds)
