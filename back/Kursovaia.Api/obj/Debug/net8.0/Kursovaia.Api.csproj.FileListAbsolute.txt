@@ -252,11 +252,6 @@ C:/Users/sasha/OneDrive/Документы/Kursovaia/back/Kursovaia.Api/obj/Debu
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/Kursovaia.Api.sourcelink.json
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets.build.json
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets.development.json
-/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets/msbuild.Kursovaia.Api.Microsoft.AspNetCore.StaticWebAssets.props
-/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets/msbuild.build.Kursovaia.Api.props
-/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.Kursovaia.Api.props
-/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.Kursovaia.Api.props
-/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets.pack.json
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/scopedcss/bundle/Kursovaia.Api.styles.css
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/Kursovai.77304662.Up2Date
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/Kursovaia.Api.dll
@@ -264,3 +259,11 @@ C:/Users/sasha/OneDrive/Документы/Kursovaia/back/Kursovaia.Api/obj/Debu
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/Kursovaia.Api.pdb
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/Kursovaia.Api.genruntimeconfig.cache
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/ref/Kursovaia.Api.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/bin/Debug/net8.0/Kursovaia.Api.staticwebassets.endpoints.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/rpswa.dswa.cache.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/rjimswa.dswa.cache.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets.build.json.cache
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api/obj/Debug/net8.0/swae.build.ex.cache
