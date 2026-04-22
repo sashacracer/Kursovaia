@@ -675,6 +675,11 @@ form a:hover {
     color: var(--accent-yellow);
     font-family: monospace;
 }
+
+.analysis-history-meta {
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
 .profile-link {
   color: var(--accent-yellow);
   font-weight: 600;

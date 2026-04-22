@@ -25,52 +25,66 @@
     <main class="content">
       <section class="page-hero">
         <h1>Pre-match анализ</h1>
-        <p>Структура принятия решения: от формы команд до value в линии.</p>
+        <p>Перенесенные матчи из линии, xG из Understat и расчет шансов по модели Пуассона.</p>
       </section>
 
       <section class="calculator-section">
-        <h3>Чеклист перед ставкой</h3>
-        <div class="tips-list">
-          <div class="tip-item">Сверить последние 5 матчей и уровень соперников.</div>
-          <div class="tip-item">Проверить составы и статус травм за 60 минут до игры.</div>
-          <div class="tip-item">Сопоставить движение коэффициентов с новостным фоном.</div>
-          <div class="tip-item">Оценить мотивацию и турнирный контекст встречи.</div>
+        <h3>Матчи для анализа</h3>
+        <div class="section-inline-actions">
+          <button class="btn btn-clear" id="clearAnalysisMatchesBtn" type="button">Очистить матчи</button>
+        </div>
+        <div id="analysisMatchesContainer" class="analysis-match-list">
+          <div class="tip-item">Нет выбранных матчей. Выбери исходы на странице Линия и нажми "В анализ".</div>
         </div>
       </section>
 
-      <section class="info-grid">
-        <article class="info-card">
-          <h3>Матч дня: Реал - Атлетико</h3>
-          <p class="muted">Ожидаемый темп: средний, с упором на позиционные атаки хозяев.</p>
-          <ul class="analysis-list">
-            <li>Реал дома: 7 побед в 9 матчах.</li>
-            <li>Атлетико на выезде пропускает в 6 из 8 игр.</li>
-            <li>При раннем голе Реала растет вероятность ТБ 2.5.</li>
-          </ul>
-        </article>
+      <section class="calculator-section">
+        <h3>xG из Understat</h3>
+        <p class="muted">Внеси ожидаемые голы из Understat и получи вероятности исходов.</p>
+        <div class="calc-inputs">
+          <div class="input-group">
+            <label>xG хозяев (Understat)</label>
+            <input type="number" id="xgHome" step="0.01" min="0" value="1.40">
+          </div>
+          <div class="input-group">
+            <label>xG гостей (Understat)</label>
+            <input type="number" id="xgAway" step="0.01" min="0" value="1.10">
+          </div>
+          <button id="calculateChancesBtn" class="btn btn-calculate" type="button">Посчитать шансы</button>
+        </div>
+        <p class="muted" id="xgSourceText">Источник xG: ожидается запрос к backend.</p>
+        <div class="calc-results" id="chancesResults" style="display: none;"></div>
+      </section>
 
-        <article class="info-card">
-          <h3>Идеи рынка</h3>
-          <p class="muted">Не прогноз, а гипотезы для проверки по линии и составам.</p>
-          <ul class="analysis-list">
-            <li>Обе забьют - Да при коэффициенте от 1.80.</li>
-            <li>Инд. тотал хозяев больше 1.5 при 1.90+.</li>
-            <li>Live-добавка на гол после 70' при низком xG.</li>
-          </ul>
-        </article>
+      <section class="calculator-section">
+        <h3>Где взять xG</h3>
+        <div class="tips-list">
+          <div class="tip-item">Открой карточку команды или матча на Understat.</div>
+          <div class="tip-item">Возьми средний xG for и xG against за актуальный период.</div>
+          <div class="tip-item">Перенеси значения в поля выше и обнови расчет.</div>
+          <a class="stats-link" id="understatSearchLink" href="https://understat.com/" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon">📈</span>
+            <div>
+              <span class="link-title">Открыть Understat</span>
+              <span class="link-desc">По активному матчу</span>
+            </div>
+          </a>
+        </div>
       </section>
     </main>
 
     <aside class="sidebar">
       <div class="stats-box">
-        <h4>Статус проверки</h4>
-        <div class="stat-item"><span>Составы</span><span class="stat-value">Ожидаются</span></div>
-        <div class="stat-item"><span>Погодные условия</span><span class="stat-value">Нормально</span></div>
-        <div class="stat-item"><span>Value по рынку</span><span class="stat-value success">Есть сигналы</span></div>
+        <h4>Сводка анализа</h4>
+        <div class="stat-item"><span>Активный матч</span><span class="stat-value" id="activeMatchTitle">Не выбран</span></div>
+        <div class="stat-item"><span>Коэффициенты 1X2</span><span class="stat-value" id="activeOdds">П1 - | X - | П2 -</span></div>
+        <div class="stat-item"><span>Выбранный исход</span><span class="stat-value" id="activePick">-</span></div>
+        <div class="stat-item"><span>Модельный value</span><span class="stat-value success" id="activeValue">-</span></div>
       </div>
     </aside>
   </div>
 
   <script src="js/common.js"></script>
+  <script src="js/analiz-page.js"></script>
 </body>
 </html>

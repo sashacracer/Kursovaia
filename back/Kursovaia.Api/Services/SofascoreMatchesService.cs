@@ -117,6 +117,7 @@ public class SofascoreMatchesService
 
                 var startTimestamp = ev.TryGetProperty("startTimestamp", out var tsEl) ? tsEl.GetInt64() : 0;
                 var dateTime = DateTimeOffset.FromUnixTimeSeconds(startTimestamp).ToLocalTime().DateTime;
+                var matchId = BuildMatchId(ev, homeName, awayName, startTimestamp);
                 var statusType = ev.TryGetProperty("status", out var statusEl) && statusEl.TryGetProperty("type", out var typeEl)
                     ? typeEl.GetString()
                     : null;
@@ -134,6 +135,7 @@ public class SofascoreMatchesService
 
                 result.Add(new Match
                 {
+                    Id = matchId,
                     League = $"Football. {league}",
                     Time = isLive ? $"LIVE {dateTime:HH:mm}" : dateTime.ToString("dd.MM HH:mm", CultureInfo.InvariantCulture),
                     HomeTeam = new Team
@@ -155,11 +157,30 @@ public class SofascoreMatchesService
             }
             catch
             {
-                // Skip malformed event entries.
+                
             }
         }
 
         return result;
+    }
+
+    private static int BuildMatchId(JsonElement ev, string homeName, string awayName, long startTimestamp)
+    {
+        if (ev.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.Number)
+        {
+            if (idEl.TryGetInt32(out var id32) && id32 != 0)
+            {
+                return id32;
+            }
+
+            if (idEl.TryGetInt64(out var id64) && id64 != 0)
+            {
+                return unchecked((int)(id64 & 0x7FFFFFFF));
+            }
+        }
+
+        var fallback = HashCode.Combine(homeName, awayName, startTimestamp);
+        return fallback == 0 ? 1 : Math.Abs(fallback);
     }
 
     private static MatchOdds BuildPseudoOdds(string home, string away, DateTime start)

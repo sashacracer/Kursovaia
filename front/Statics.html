@@ -30,21 +30,31 @@
 
       <section class="kpi-grid">
         <article class="kpi-card">
-          <span class="kpi-label">Средний тотал</span>
-          <strong class="kpi-value">2.84</strong>
+          <span class="kpi-label">Матчей в базе</span>
+          <strong class="kpi-value" id="kpiTotalMatches">0</strong>
         </article>
         <article class="kpi-card">
-          <span class="kpi-label">Обе забьют</span>
-          <strong class="kpi-value">58%</strong>
+          <span class="kpi-label">Live матчей</span>
+          <strong class="kpi-value" id="kpiLiveMatches">0</strong>
         </article>
         <article class="kpi-card">
-          <span class="kpi-label">Победы фаворитов</span>
-          <strong class="kpi-value">63%</strong>
+          <span class="kpi-label">Средний кэф П1</span>
+          <strong class="kpi-value" id="kpiAvgP1">0.00</strong>
         </article>
         <article class="kpi-card">
-          <span class="kpi-label">Голы после 80'</span>
-          <strong class="kpi-value">24%</strong>
+          <span class="kpi-label">Матчей со счетом</span>
+          <strong class="kpi-value" id="kpiWithScore">0</strong>
         </article>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Выбранные матчи</h3>
+        <div class="section-inline-actions">
+          <button class="btn btn-clear" id="clearSelectedStatsBtn" type="button">Очистить выбранные</button>
+        </div>
+        <div id="selectedMatchesStats" class="selected-matches-list">
+          <div class="tip-item">Пока нет выбранных матчей. Выбери коэффициенты на странице Линия.</div>
+        </div>
       </section>
 
       <section class="calculator-section">
@@ -53,18 +63,81 @@
           <div class="table-row table-head">
             <span>Лига</span><span>Голов/матч</span><span>ОЗ Да</span><span>ТБ 2.5</span>
           </div>
-          <div class="table-row">
-            <span>АПЛ</span><span>3.01</span><span>61%</span><span>57%</span>
+          <div id="leagueStatsBody">
+            <div class="table-row">
+              <span>Загрузка...</span><span>0.00</span><span>0%</span><span>0%</span>
+            </div>
           </div>
-          <div class="table-row">
-            <span>Серия A</span><span>2.76</span><span>56%</span><span>52%</span>
+        </div>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Калькулятор Value Bet</h3>
+        <div class="calc-inputs">
+          <div class="input-group">
+            <label>Коэффициент букмекера</label>
+            <input type="number" id="bookmakerOdd" step="0.01" placeholder="1.47">
           </div>
-          <div class="table-row">
-            <span>Ла Лига</span><span>2.58</span><span>50%</span><span>47%</span>
+          <div class="input-group">
+            <label>Ваша вероятность (%)</label>
+            <input type="number" id="yourProbability" step="0.1" placeholder="65">
           </div>
-          <div class="table-row">
-            <span>Бундеслига</span><span>3.22</span><span>64%</span><span>62%</span>
+          <button id="calculateBtn" class="btn btn-calculate">Рассчитать</button>
+        </div>
+        <div class="calc-results" id="calcResults" style="display: none;"></div>
+      </section>
+
+      <section class="calculator-section">
+        <h3>Помощь в оценке вероятности</h3>
+        <div class="analysis-factors">
+          <div class="factor-group">
+            <h4>Форма команд (последние 5 матчей)</h4>
+            <div class="factor-inputs">
+              <div class="input-group">
+                <label>Побед хозяев</label>
+                <input type="number" id="homeWins" min="0" max="5" value="3" onchange="calculateProbability()">
+              </div>
+              <div class="input-group">
+                <label>Побед гостей</label>
+                <input type="number" id="awayWins" min="0" max="5" value="2" onchange="calculateProbability()">
+              </div>
+            </div>
           </div>
+
+          <div class="factor-group">
+            <h4>Личные встречи (H2H)</h4>
+            <div class="factor-inputs">
+              <div class="input-group">
+                <label>Побед хозяев</label>
+                <input type="number" id="h2hHome" min="0" value="2" onchange="calculateProbability()">
+              </div>
+              <div class="input-group">
+                <label>Ничьих</label>
+                <input type="number" id="h2hDraw" min="0" value="1" onchange="calculateProbability()">
+              </div>
+              <div class="input-group">
+                <label>Побед гостей</label>
+                <input type="number" id="h2hAway" min="0" value="1" onchange="calculateProbability()">
+              </div>
+            </div>
+          </div>
+
+          <div class="factor-group">
+            <h4>Дополнительные факторы</h4>
+            <div class="checkbox-group">
+              <label><input type="checkbox" id="homeAdvantage" checked onchange="calculateProbability()"> Домашнее преимущество (+5%)</label>
+              <label><input type="checkbox" id="keyInjuries" onchange="calculateProbability()"> Травмы ключевых игроков (-10%)</label>
+              <label><input type="checkbox" id="highMotivation" onchange="calculateProbability()"> Высокая мотивация (+5%)</label>
+              <label><input type="checkbox" id="fatigue" onchange="calculateProbability()"> Усталость от игр (-5%)</label>
+            </div>
+          </div>
+
+          <div class="calculated-probability">
+            <span>Расчетная вероятность победы хозяев:</span>
+            <span id="calculatedProb" class="prob-value">50%</span>
+          </div>
+
+          <button class="btn btn-calculate" type="button" onclick="applyCalculatedProb()">Применить в калькулятор</button>
         </div>
       </section>
     </main>
@@ -72,13 +145,14 @@
     <aside class="sidebar">
       <div class="stats-box">
         <h4>Индикаторы риска</h4>
-        <div class="stat-item"><span>Серии без побед</span><span class="stat-value">7 команд</span></div>
-        <div class="stat-item"><span>Плотность календаря</span><span class="stat-value">Высокая</span></div>
-        <div class="stat-item"><span>Ротация составов</span><span class="stat-value success">Активна</span></div>
+        <div class="stat-item"><span>Выбрано исходов</span><span class="stat-value" id="selectedCount">0</span></div>
+        <div class="stat-item"><span>Средний кэф выбора</span><span class="stat-value" id="selectedAvgOdd">0.00</span></div>
+        <div class="stat-item"><span>Live среди выбранных</span><span class="stat-value success" id="selectedLiveCount">0</span></div>
       </div>
     </aside>
   </div>
 
   <script src="js/common.js"></script>
+  <script src="js/stats-page.js"></script>
 </body>
 </html>

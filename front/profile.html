@@ -59,6 +59,23 @@
         <p class="empty-text">Нет избранных матчей</p>
       </div>
     </div>
+
+    <div class="favorites-section" id="createdMatchesSection" style="margin-top: 24px;">
+      <h3>Мои добавленные матчи</h3>
+      <div id="createdMatchesList">
+        <p class="empty-text">Нет добавленных матчей</p>
+      </div>
+    </div>
+
+    <div class="favorites-section" id="analysisHistorySection" style="margin-top: 24px;">
+      <h3>История анализа</h3>
+      <div class="section-inline-actions" style="margin-bottom: 12px;">
+        <button class="btn btn-clear" onclick="clearAnalysisHistory()">Очистить историю</button>
+      </div>
+      <div id="analysisHistoryList">
+        <p class="empty-text">История анализа пуста</p>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -84,24 +101,95 @@
   </div>
 </div>
 
+<div id="editMatchModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 560px;">
+    <span class="close-modal" onclick="closeEditMatchModal()">&times;</span>
+    <h3>Редактировать матч</h3>
+    <form id="editMatchForm" onsubmit="handleUpdateMatch(event)">
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Лига</label>
+        <input type="text" id="editMatchLeague" required>
+      </div>
+      <div class="input-group" style="margin-bottom: 12px;">
+        <label>Время матча</label>
+        <input type="text" id="editMatchTime" required>
+      </div>
+      <div class="add-match-grid">
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Хозяева</label>
+          <input type="text" id="editMatchHomeTeam" required>
+        </div>
+        <div class="input-group" style="margin-bottom: 12px;">
+          <label>Гости</label>
+          <input type="text" id="editMatchAwayTeam" required>
+        </div>
+      </div>
+      <div class="add-match-grid">
+        <div class="input-group" style="margin-bottom: 16px;">
+          <label>Коэффициент П1</label>
+          <input type="number" id="editMatchP1" required min="1.01" step="0.01">
+        </div>
+        <div class="input-group" style="margin-bottom: 16px;">
+          <label>Коэффициент X</label>
+          <input type="number" id="editMatchX" required min="1.01" step="0.01">
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <label>Коэффициент П2</label>
+        <input type="number" id="editMatchP2" required min="1.01" step="0.01">
+      </div>
+      <button type="submit" class="btn btn-register" style="width: 100%;">Сохранить матч</button>
+    </form>
+  </div>
+</div>
+
 <script>
-const API_URL = 'http://localhost:5261';
+const API_URL = 'http://localhost:5262';
+const ANALYSIS_HISTORY_STORAGE_KEY = 'analysisHistory';
 let currentUser = null;
+let createdMatches = [];
+let editingMatchId = null;
+
+function setConnectionStatus(text) {
+  const status = document.getElementById('connectionStatus');
+  if (status) status.textContent = text;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('currentUser');
+  const savedUser = localStorage.getItem('currentUser');
     if (!savedUser) {
         window.location.href = 'index.html';
         return;
     }
-    
+
+  try {
     currentUser = JSON.parse(savedUser);
+  } catch (error) {
+    console.error('Invalid currentUser in localStorage', error);
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  if (!currentUser || !currentUser.id) {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+    return;
+  }
+
     updateAuthUI();
+    setConnectionStatus('🟡 Загрузка...');
     loadProfile();
 });
 
 function updateAuthUI() {
     const usernameDisplay = document.getElementById('usernameDisplay');
+  const userProfile = document.getElementById('userProfile');
+
+  if (userProfile) {
+    userProfile.style.display = currentUser ? 'flex' : 'none';
+  }
+
     if (usernameDisplay && currentUser) {
         usernameDisplay.textContent = currentUser.username;
     }
@@ -109,8 +197,10 @@ function updateAuthUI() {
 
 async function loadProfile() {
     try {
+    setConnectionStatus('🟡 Загрузка...');
         const response = await fetch(`${API_URL}/api/users/${currentUser.id}`);
         if (!response.ok) {
+      setConnectionStatus('🔴 Оффлайн');
             logout();
             return;
         }
@@ -128,10 +218,111 @@ async function loadProfile() {
         document.getElementById('editEmail').value = user.email;
 
         renderFavorites(user.favorites);
+        loadCreatedMatches();
+        loadAnalysisHistory();
+        setConnectionStatus('🟢 Онлайн');
         
     } catch (error) {
         console.error('Error loading profile:', error);
+        setConnectionStatus('🔴 Оффлайн');
     }
+}
+
+    async function loadCreatedMatches() {
+      try {
+        const response = await fetch(`${API_URL}/api/users/${currentUser.id}/created-matches`);
+        if (!response.ok) {
+          renderCreatedMatches([]);
+          return;
+        }
+
+        createdMatches = await response.json();
+        renderCreatedMatches(createdMatches);
+      } catch (error) {
+        console.error('Error loading created matches:', error);
+        renderCreatedMatches([]);
+      }
+    }
+
+function loadAnalysisHistory() {
+  const container = document.getElementById('analysisHistoryList');
+  if (!container) return;
+
+  const raw = localStorage.getItem(ANALYSIS_HISTORY_STORAGE_KEY);
+  if (!raw) {
+    container.innerHTML = '<p class="empty-text">История анализа пуста</p>';
+    return;
+  }
+
+  let history = [];
+  try {
+    const parsed = JSON.parse(raw);
+    history = Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error('Invalid analysis history in storage', error);
+    container.innerHTML = '<p class="empty-text">История анализа пуста</p>';
+    return;
+  }
+
+  const userHistory = history.filter(item => Number(item.userId) === Number(currentUser.id));
+
+  if (userHistory.length === 0) {
+    container.innerHTML = '<p class="empty-text">История анализа пуста</p>';
+    return;
+  }
+
+  container.innerHTML = userHistory.map(item => {
+    const analyzedAt = item.analyzedAt ? new Date(item.analyzedAt).toLocaleString() : '-';
+    const p1 = Number(item.probabilities?.p1 || 0) * 100;
+    const x = Number(item.probabilities?.x || 0) * 100;
+    const p2 = Number(item.probabilities?.p2 || 0) * 100;
+    const valuePercent = Number(item.valuePercent || 0);
+
+    return `
+      <div class="favorite-item">
+        <div class="favorite-match">
+          <span class="match-teams">${item.homeTeam} - ${item.awayTeam}</span>
+          <span class="match-time">${item.league || ''} • ${item.time || ''}</span>
+          <span class="match-time">Анализ: ${analyzedAt}</span>
+        </div>
+        <div class="favorite-odds analysis-history-meta">
+          Выбор: ${item.pickType} @ ${Number(item.pickOdd).toFixed(2)}<br>
+          xG: ${Number(item.xgHome).toFixed(2)} - ${Number(item.xgAway).toFixed(2)}<br>
+          Вероятности: П1 ${p1.toFixed(1)}% | X ${x.toFixed(1)}% | П2 ${p2.toFixed(1)}%<br>
+          Value: <span class="value-highlight ${valuePercent >= 0 ? 'positive' : 'negative'}">${valuePercent >= 0 ? '+' : ''}${valuePercent.toFixed(2)}%</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearAnalysisHistory() {
+  const raw = localStorage.getItem(ANALYSIS_HISTORY_STORAGE_KEY);
+  if (!raw) {
+    loadAnalysisHistory();
+    return;
+  }
+
+  let history = [];
+  try {
+    const parsed = JSON.parse(raw);
+    history = Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error('Invalid analysis history in storage', error);
+    localStorage.removeItem(ANALYSIS_HISTORY_STORAGE_KEY);
+    loadAnalysisHistory();
+    return;
+  }
+
+  const filtered = history.filter(item => Number(item.userId) !== Number(currentUser.id));
+
+  if (filtered.length === 0) {
+    localStorage.removeItem(ANALYSIS_HISTORY_STORAGE_KEY);
+  } else {
+    localStorage.setItem(ANALYSIS_HISTORY_STORAGE_KEY, JSON.stringify(filtered));
+  }
+
+  loadAnalysisHistory();
 }
 
 function renderFavorites(favorites) {
@@ -158,6 +349,30 @@ function renderFavorites(favorites) {
     `).join('');
 }
 
+  function renderCreatedMatches(matches) {
+    const container = document.getElementById('createdMatchesList');
+
+    if (!matches || matches.length === 0) {
+      container.innerHTML = '<p class="empty-text">Нет добавленных матчей</p>';
+      return;
+    }
+
+    container.innerHTML = matches.map(match => `
+      <div class="favorite-item">
+        <div class="favorite-match">
+          <span class="match-teams">${match.homeTeam.name} - ${match.awayTeam.name}</span>
+          <span class="match-time">${match.league} • ${match.time}</span>
+        </div>
+        <div class="favorite-odds">
+          П1: ${Number(match.odds.p1).toFixed(2)} |
+          X: ${Number(match.odds.x).toFixed(2)} |
+          П2: ${Number(match.odds.p2).toFixed(2)}
+        </div>
+        <button class="btn btn-calculate" onclick="openEditMatchModal(${match.id})">Редактировать</button>
+      </div>
+    `).join('');
+  }
+
 async function removeFavorite(matchId) {
     try {
         const response = await fetch(`${API_URL}/api/users/${currentUser.id}/favorites/${matchId}`, {
@@ -178,6 +393,28 @@ function openEditModal() {
 
 function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
+}
+
+function openEditMatchModal(matchId) {
+  const match = createdMatches.find(item => item.id === matchId);
+  if (!match) return;
+
+  editingMatchId = matchId;
+
+  document.getElementById('editMatchLeague').value = match.league;
+  document.getElementById('editMatchTime').value = match.time;
+  document.getElementById('editMatchHomeTeam').value = match.homeTeam.name;
+  document.getElementById('editMatchAwayTeam').value = match.awayTeam.name;
+  document.getElementById('editMatchP1').value = Number(match.odds.p1).toFixed(2);
+  document.getElementById('editMatchX').value = Number(match.odds.x).toFixed(2);
+  document.getElementById('editMatchP2').value = Number(match.odds.p2).toFixed(2);
+
+  document.getElementById('editMatchModal').style.display = 'flex';
+}
+
+function closeEditMatchModal() {
+  editingMatchId = null;
+  document.getElementById('editMatchModal').style.display = 'none';
 }
 
 async function handleUpdate(event) {
@@ -216,6 +453,46 @@ async function handleUpdate(event) {
     }
 }
 
+  async function handleUpdateMatch(event) {
+    event.preventDefault();
+
+    if (!editingMatchId) {
+      alert('Матч не выбран');
+      return;
+    }
+
+    const updateData = {
+      league: document.getElementById('editMatchLeague').value,
+      time: document.getElementById('editMatchTime').value,
+      homeTeam: document.getElementById('editMatchHomeTeam').value,
+      awayTeam: document.getElementById('editMatchAwayTeam').value,
+      p1: parseFloat(document.getElementById('editMatchP1').value),
+      x: parseFloat(document.getElementById('editMatchX').value),
+      p2: parseFloat(document.getElementById('editMatchP2').value)
+    };
+
+    try {
+      const response = await fetch(`${API_URL}/api/users/${currentUser.id}/created-matches/${editingMatchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        alert(errorText || 'Ошибка обновления матча');
+        return;
+      }
+
+      closeEditMatchModal();
+      await loadCreatedMatches();
+      alert('Матч обновлён!');
+    } catch (error) {
+      console.error('Match update error:', error);
+      alert('Ошибка обновления матча. Попробуйте позже.');
+    }
+  }
+
 function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
@@ -224,9 +501,13 @@ function logout() {
 
 window.onclick = function(event) {
     const editModal = document.getElementById('editModal');
+  const editMatchModal = document.getElementById('editMatchModal');
     if (event.target === editModal) {
         closeEditModal();
     }
+  if (event.target === editMatchModal) {
+    closeEditMatchModal();
+  }
 }
 </script>
 </body>

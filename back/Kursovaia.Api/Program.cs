@@ -9,7 +9,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(AppCommon.CorsPolicyName, policy =>
     {
-        policy.WithOrigins(AppCommon.FrontendOrigins)
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                  {
+                      return false;
+                  }
+
+                  var isLocalHost = uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                                    || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase);
+
+                  return isLocalHost && uri.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase);
+              })
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -143,6 +154,92 @@ app.MapGet(AppCommon.Routes.UserById, async (int id, UserService service) =>
                 Odds = f.Match.Odds
             }
         })
+    });
+});
+
+app.MapGet(AppCommon.Routes.UserCreatedMatches, async (int userId, OddsService service) =>
+{
+    var matches = await service.GetUserCreatedMatchesByUserAsync(userId);
+
+    return Results.Ok(matches.Select(match => new
+    {
+        match.Id,
+        match.League,
+        match.Time,
+        HomeTeam = new
+        {
+            match.HomeTeam.Id,
+            match.HomeTeam.Name,
+            match.HomeTeam.Logo,
+            match.HomeTeam.Form
+        },
+        AwayTeam = new
+        {
+            match.AwayTeam.Id,
+            match.AwayTeam.Name,
+            match.AwayTeam.Logo,
+            match.AwayTeam.Form
+        },
+        Odds = new
+        {
+            match.Odds.Id,
+            match.Odds.MatchId,
+            match.Odds.P1,
+            match.Odds.X,
+            match.Odds.P2,
+            match.Odds.LastUpdated
+        },
+        match.IsLive,
+        match.Score
+    }));
+});
+
+app.MapPut(AppCommon.Routes.UserCreatedMatchById, async (
+    int userId,
+    int matchId,
+    CreateUserMatchRequest request,
+    OddsService service) =>
+{
+    if (string.IsNullOrWhiteSpace(request.League)
+        || string.IsNullOrWhiteSpace(request.Time)
+        || string.IsNullOrWhiteSpace(request.HomeTeam)
+        || string.IsNullOrWhiteSpace(request.AwayTeam))
+    {
+        return Results.BadRequest("League, time, homeTeam and awayTeam are required");
+    }
+
+    if (request.P1 <= 0 || request.X <= 0 || request.P2 <= 0)
+    {
+        return Results.BadRequest("Odds must be greater than 0");
+    }
+
+    var (match, error) = await service.UpdateUserMatchAsync(
+        userId,
+        matchId,
+        request.League.Trim(),
+        request.Time.Trim(),
+        request.HomeTeam.Trim(),
+        request.AwayTeam.Trim(),
+        request.P1,
+        request.X,
+        request.P2);
+
+    if (match == null)
+    {
+        return Results.BadRequest(error ?? "Could not update match");
+    }
+
+    return Results.Ok(new
+    {
+        match.Id,
+        match.League,
+        match.Time,
+        HomeTeam = new { match.HomeTeam.Id, match.HomeTeam.Name, match.HomeTeam.Logo, match.HomeTeam.Form },
+        AwayTeam = new { match.AwayTeam.Id, match.AwayTeam.Name, match.AwayTeam.Logo, match.AwayTeam.Form },
+        Odds = new { match.Odds.Id, match.Odds.MatchId, match.Odds.P1, match.Odds.X, match.Odds.P2, match.Odds.LastUpdated },
+        match.IsLive,
+        match.Score,
+        match.CreatedByUserId
     });
 });
 

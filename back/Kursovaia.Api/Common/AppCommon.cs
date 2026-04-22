@@ -20,6 +20,8 @@ public static class AppCommon
         public const string AuthLogin = "/api/auth/login";
         public const string UserById = "/api/users/{id}";
         public const string UserMatches = "/api/users/{userId}/matches";
+        public const string UserCreatedMatches = "/api/users/{userId}/created-matches";
+        public const string UserCreatedMatchById = "/api/users/{userId}/created-matches/{matchId}";
         public const string UserFavorites = "/api/users/{userId}/favorites/{matchId}";
     }
 

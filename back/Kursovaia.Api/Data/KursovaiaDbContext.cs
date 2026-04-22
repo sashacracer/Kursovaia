@@ -35,6 +35,12 @@ public class KursovaiaDbContext : DbContext
             .WithOne()
             .HasForeignKey<MatchOdds>(o => o.MatchId);
 
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(m => m.CreatedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();

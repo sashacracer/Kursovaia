@@ -36,6 +36,9 @@ namespace Kursovaia.Api.Migrations
                     b.Property<int>("HomeTeamId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsLive")
                         .HasColumnType("bit");
 
@@ -188,6 +191,11 @@ namespace Kursovaia.Api.Migrations
 
             modelBuilder.Entity("Kursovaia.Api.Models.Match", b =>
                 {
+                    b.HasOne("Kursovaia.Api.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Kursovaia.Api.Models.Team", "AwayTeam")
                         .WithMany()
                         .HasForeignKey("AwayTeamId")
@@ -201,6 +209,8 @@ namespace Kursovaia.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("AwayTeam");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("HomeTeam");
                 });

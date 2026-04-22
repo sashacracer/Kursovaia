@@ -36,7 +36,7 @@ public class OddsService
         try
         {
             await context.Database.MigrateAsync();
-            await EnsureIsUserCreatedColumnAsync(context);
+            await EnsureUserMatchColumnsAsync(context);
         }
         catch (Exception ex)
         {
@@ -55,6 +55,7 @@ public class OddsService
                 new() { Name = "Albacete", Logo = "⚪", Form = "8-6-8" },
                 new() { Name = "Barcelona", Logo = "🔵🔴", Form = "13-8-1" }
             };
+
             context.Teams.AddRange(teams);
             await context.SaveChangesAsync();
 
@@ -88,6 +89,7 @@ public class OddsService
                     IsLive = false
                 }
             };
+
             context.Matches.AddRange(matches);
             await context.SaveChangesAsync();
         }
@@ -110,7 +112,9 @@ public class OddsService
         {
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
-            
+
+            await EnsureUserMatchColumnsAsync(context);
+
             return await context.Matches
                 .Include(m => m.HomeTeam)
                 .Include(m => m.AwayTeam)
@@ -137,7 +141,7 @@ public class OddsService
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
 
-        await EnsureIsUserCreatedColumnAsync(context);
+        await EnsureUserMatchColumnsAsync(context);
 
         var userExists = await context.Users.AnyAsync(u => u.Id == userId);
         if (!userExists)
@@ -148,24 +152,14 @@ public class OddsService
         var homeTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == homeTeamName);
         if (homeTeam == null)
         {
-            homeTeam = new Team
-            {
-                Name = homeTeamName,
-                Logo = "⚽",
-                Form = "-"
-            };
+            homeTeam = new Team { Name = homeTeamName, Logo = "⚽", Form = "-" };
             context.Teams.Add(homeTeam);
         }
 
         var awayTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == awayTeamName);
         if (awayTeam == null)
         {
-            awayTeam = new Team
-            {
-                Name = awayTeamName,
-                Logo = "⚽",
-                Form = "-"
-            };
+            awayTeam = new Team { Name = awayTeamName, Logo = "⚽", Form = "-" };
             context.Teams.Add(awayTeam);
         }
 
@@ -175,6 +169,7 @@ public class OddsService
             .Include(m => m.Odds)
             .FirstOrDefaultAsync(m =>
                 m.IsUserCreated
+                && m.CreatedByUserId == userId
                 && m.League == league
                 && m.Time == time
                 && m.HomeTeam.Name == homeTeamName
@@ -193,6 +188,7 @@ public class OddsService
             AwayTeam = awayTeam,
             IsLive = false,
             IsUserCreated = true,
+            CreatedByUserId = userId,
             Odds = new MatchOdds
             {
                 P1 = p1,
@@ -208,6 +204,75 @@ public class OddsService
         return (match, null);
     }
 
+    public async Task<List<Match>> GetUserCreatedMatchesByUserAsync(int userId)
+    {
+        using var scope = _services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
+
+        await EnsureUserMatchColumnsAsync(context);
+
+        return await context.Matches
+            .Include(m => m.HomeTeam)
+            .Include(m => m.AwayTeam)
+            .Include(m => m.Odds)
+            .Where(m => m.IsUserCreated && m.CreatedByUserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<(Match? Match, string? Error)> UpdateUserMatchAsync(
+        int userId,
+        int matchId,
+        string league,
+        string time,
+        string homeTeamName,
+        string awayTeamName,
+        double p1,
+        double x,
+        double p2)
+    {
+        using var scope = _services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
+
+        await EnsureUserMatchColumnsAsync(context);
+
+        var match = await context.Matches
+            .Include(m => m.HomeTeam)
+            .Include(m => m.AwayTeam)
+            .Include(m => m.Odds)
+            .FirstOrDefaultAsync(m => m.Id == matchId && m.IsUserCreated && m.CreatedByUserId == userId);
+
+        if (match == null)
+        {
+            return (null, "Match not found");
+        }
+
+        var homeTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == homeTeamName);
+        if (homeTeam == null)
+        {
+            homeTeam = new Team { Name = homeTeamName, Logo = "⚽", Form = "-" };
+            context.Teams.Add(homeTeam);
+        }
+
+        var awayTeam = await context.Teams.FirstOrDefaultAsync(t => t.Name == awayTeamName);
+        if (awayTeam == null)
+        {
+            awayTeam = new Team { Name = awayTeamName, Logo = "⚽", Form = "-" };
+            context.Teams.Add(awayTeam);
+        }
+
+        match.League = league;
+        match.Time = time;
+        match.HomeTeam = homeTeam;
+        match.AwayTeam = awayTeam;
+        match.Odds.P1 = p1;
+        match.Odds.X = x;
+        match.Odds.P2 = p2;
+        match.Odds.LastUpdated = DateTime.Now;
+
+        await context.SaveChangesAsync();
+        return (match, null);
+    }
+
     private async Task<List<Match>> GetUserCreatedMatchesAsync()
     {
         try
@@ -215,7 +280,7 @@ public class OddsService
             using var scope = _services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
 
-            await EnsureIsUserCreatedColumnAsync(context);
+            await EnsureUserMatchColumnsAsync(context);
 
             return await context.Matches
                 .Include(m => m.HomeTeam)
@@ -231,12 +296,16 @@ public class OddsService
         }
     }
 
-    private static Task EnsureIsUserCreatedColumnAsync(KursovaiaDbContext context)
+    private static Task EnsureUserMatchColumnsAsync(KursovaiaDbContext context)
     {
         return context.Database.ExecuteSqlRawAsync(@"
 IF COL_LENGTH('Matches', 'IsUserCreated') IS NULL
 BEGIN
     ALTER TABLE [Matches] ADD [IsUserCreated] bit NOT NULL CONSTRAINT [DF_Matches_IsUserCreated] DEFAULT(0);
+END
+IF COL_LENGTH('Matches', 'CreatedByUserId') IS NULL
+BEGIN
+    ALTER TABLE [Matches] ADD [CreatedByUserId] int NULL;
 END");
     }
 
@@ -244,7 +313,7 @@ END");
     {
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
-        
+
         var odds = await context.MatchOdds.FirstOrDefaultAsync(o => o.MatchId == matchId);
         if (odds != null)
         {
@@ -260,7 +329,7 @@ END");
     {
         using var scope = _services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<KursovaiaDbContext>();
-        
+
         var oddsList = await context.MatchOdds.ToListAsync();
         foreach (var odds in oddsList)
         {
@@ -270,6 +339,7 @@ END");
             odds.P2 *= change;
             odds.LastUpdated = DateTime.Now;
         }
+
         await context.SaveChangesAsync();
     }
 

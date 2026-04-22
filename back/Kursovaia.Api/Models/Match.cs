@@ -14,6 +14,8 @@ public class Match
     
     public MatchOdds Odds { get; set; } = null!;
     public bool IsUserCreated { get; set; }
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
     public bool IsLive { get; set; }
     public string? Score { get; set; }
 }

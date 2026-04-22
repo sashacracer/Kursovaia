@@ -17,13 +17,27 @@ public class OddsBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _services.CreateScope();
-            var oddsService = scope.ServiceProvider.GetRequiredService<OddsService>();
-            
-            await oddsService.SimulateOddsChangesAsync();
-            _logger.LogInformation("Odds updated at {Time}", DateTime.Now);
-            
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            try
+            {
+                using var scope = _services.CreateScope();
+                var oddsService = scope.ServiceProvider.GetRequiredService<OddsService>();
+                
+                await oddsService.SimulateOddsChangesAsync();
+                _logger.LogInformation("Odds updated at {Time}", DateTime.Now);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to update odds. Continuing...");
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
         }
     }
 }
