@@ -1,6 +1,7 @@
 using Kursovaia.Api.Common;
 using Kursovaia.Api.Data;
 using Kursovaia.Api.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,7 @@ builder.Services.AddDbContext<KursovaiaDbContext>(options =>
 
 builder.Services.AddScoped<OddsService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ExcelService>();
 builder.Services.AddHttpClient<SofascoreMatchesService>();
 builder.Services.AddHttpClient<UnderstatXgService>();
 builder.Services.AddHostedService<OddsBackgroundService>();
@@ -155,6 +157,15 @@ app.MapGet(AppCommon.Routes.UserById, async (int id, UserService service) =>
             }
         })
     });
+});
+
+app.MapGet("/api/excel", async ([FromServices] ExcelService service) =>
+{
+    var fileBytes = await service.GetExcelAsync();
+    return Results.File(
+        fileBytes,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        $"Users_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
 });
 
 app.MapGet(AppCommon.Routes.UserCreatedMatches, async (int userId, OddsService service) =>

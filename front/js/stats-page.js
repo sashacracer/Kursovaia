@@ -248,9 +248,23 @@
     }
   }
 
+  async function exportExcel() {
+    const apiUrl = window.AppConfig?.API_URL;
+    if (!apiUrl) {
+      alert("Не найден адрес API");
+      return;
+    }
+
+    // Скачивание запускается напрямую через backend endpoint.
+    window.location.href = `${apiUrl}/api/excel`;
+  }
+
   function setupEvents() {
     const calculateBtn = byId("calculateBtn");
     if (calculateBtn) calculateBtn.addEventListener("click", calculateValue);
+
+    const exportExcelBtn = byId("exportExcelBtn");
+    if (exportExcelBtn) exportExcelBtn.addEventListener("click", exportExcel);
 
     const clearSelectedStatsBtn = byId("clearSelectedStatsBtn");
     if (clearSelectedStatsBtn) clearSelectedStatsBtn.addEventListener("click", clearSelectedOdds);
