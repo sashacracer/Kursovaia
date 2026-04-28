@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "wjjxcoyfZKqR0cNn/IoqjypQSIlWWmHm1pF+v/3HfNE=",
-  "Source": "Kursovaia.Api",
-  "BasePath": "_content/Kursovaia.Api",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"ZscQ4/YA6ucoDqTNHVi62BmivWObfHoUh2UNfLkJq0w=","Source":"Kursovaia.Api","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

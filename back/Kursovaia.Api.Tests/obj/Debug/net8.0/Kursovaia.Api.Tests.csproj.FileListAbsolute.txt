@@ -212,3 +212,11 @@
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/obj/Debug/net8.0/Kursovaia.Api.Tests.pdb
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/obj/Debug/net8.0/Kursovaia.Api.Tests.genruntimeconfig.cache
 /Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/obj/Debug/net8.0/ref/Kursovaia.Api.Tests.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/ClosedXML.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/ClosedXML.Parser.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/DocumentFormat.OpenXml.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/DocumentFormat.OpenXml.Framework.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/ExcelNumberFormat.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/RBush.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/SixLabors.Fonts.dll
+/Users/ezhzzz/Kursovaia/back/Kursovaia.Api.Tests/bin/Debug/net8.0/System.IO.Packaging.dll

@@ -61,4 +61,4 @@ Frontend:
 
 По умолчанию backend доступен на:
 - http://localhost:5262
-- http://localhost:5000/api/excel -- импорт excel
+- http://localhost:5262/api/excel -- импорт excel

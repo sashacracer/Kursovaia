@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Kursovaia.Api.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6b607e52d11d7ce784c780cd11fde07874e5ab1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8bb816380c198ff58e1c5318625c85dbfaec69db")]
 [assembly: System.Reflection.AssemblyProductAttribute("Kursovaia.Api.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Kursovaia.Api.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

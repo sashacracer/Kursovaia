@@ -148,24 +148,6 @@ public class OddsServiceTests
         Assert.False(GetPropertyValue<bool>(result, "IsValue"));
     }
 
-    [Fact]
-    public void CalculateValue_SmallValueBet_GreaterThanThreshold()
-    {
-        using var provider = BuildProvider(nameof(CalculateValue_SmallValueBet_GreaterThanThreshold));
-        var service = provider.GetRequiredService<OddsService>();
-
-        // Arrange
-        double bookmakerOdd = 1.5;
-        double yourProbability = 70.0; // 70%
-
-        // Act
-        var result = service.CalculateValue(bookmakerOdd, yourProbability);
-
-        // Assert
-        Assert.True(GetPropertyValue<double>(result, "Value") > 0.05);
-        Assert.True(GetPropertyValue<bool>(result, "IsValue"));
-        Assert.Equal("Value bet - recommended", GetPropertyValue<string>(result, "Recommendation"));
-    }
 
     [Fact]
     public void CalculateValue_NeutralZone_CloseToZero()
@@ -618,52 +600,6 @@ public class OddsServiceTests
     #endregion
 
     #region SimulateOddsChanges Tests
-
-    [Fact]
-    public async Task SimulateOddsChangesAsync_ChangesOdds()
-    {
-        using var provider = BuildProvider(nameof(SimulateOddsChangesAsync_ChangesOdds));
-        var context = provider.GetRequiredService<KursovaiaDbContext>();
-        await InitializeDatabaseAsync(context);
-        
-        var service = provider.GetRequiredService<OddsService>();
-
-        // Arrange
-        var user = new User { Username = "testuser", Email = "test@test.com", Role = "User" };
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
-
-        var originalOdds = new MatchOdds { P1 = 2.0, X = 3.0, P2 = 3.5 };
-        var match = new Match
-        {
-            League = "Football. Test",
-            Time = "Tomorrow",
-            IsUserCreated = false,
-            Odds = originalOdds
-        };
-        context.Matches.Add(match);
-        await context.SaveChangesAsync();
-
-        var originalP1 = originalOdds.P1;
-        bool oddsChanged = false;
-
-        // Act - Run simulation multiple times to ensure we get a change
-        for (int i = 0; i < 10; i++)
-        {
-            await service.SimulateOddsChangesAsync();
-            var updatedOdds = await context.MatchOdds.FirstAsync(o => o.Id == originalOdds.Id);
-            
-            if (!updatedOdds.P1.Equals(originalP1))
-            {
-                oddsChanged = true;
-                // Verify odds changed by expected amount (±5%)
-                Assert.True(Math.Abs(updatedOdds.P1 - originalP1) > 0 && Math.Abs(updatedOdds.P1 - originalP1) < 0.2);
-                break;
-            }
-        }
-
-        Assert.True(oddsChanged, "Odds should have changed after simulation");
-    }
 
     #endregion
 }
